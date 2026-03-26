@@ -1,0 +1,2059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SLO Mastery — Interactive Tutorial & Game</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #242838;
+    --border: #2e3348;
+    --text: #e2e4ed;
+    --text-dim: #8b8fa3;
+    --accent: #6c5ce7;
+    --accent-glow: rgba(108,92,231,0.3);
+    --green: #00b894;
+    --green-glow: rgba(0,184,148,0.3);
+    --red: #e17055;
+    --red-glow: rgba(225,112,85,0.3);
+    --yellow: #fdcb6e;
+    --yellow-glow: rgba(253,203,110,0.3);
+    --blue: #74b9ff;
+    --blue-glow: rgba(116,185,255,0.3);
+    --orange: #e17055;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ─── Navigation ─── */
+  .top-bar {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    background: rgba(15,17,23,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 56px;
+  }
+  .top-bar .logo { font-weight: 700; font-size: 16px; color: var(--accent); letter-spacing: -0.5px; }
+  .top-bar .logo span { color: var(--text-dim); font-weight: 400; }
+  .progress-bar-container { flex:1; max-width: 400px; margin: 0 24px; }
+  .progress-bar-bg { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--green)); border-radius: 3px; transition: width 0.5s ease; }
+  .score-display { font-size: 14px; color: var(--text-dim); }
+  .score-display b { color: var(--yellow); font-size: 16px; }
+
+  /* ─── Sidebar ─── */
+  .layout { display: flex; margin-top: 56px; min-height: calc(100vh - 56px); }
+  .sidebar {
+    width: 280px; min-width: 280px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto;
+  }
+  .sidebar h3 { padding: 0 20px; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 12px; }
+  .nav-group { margin-bottom: 24px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 20px; cursor: pointer; transition: all 0.2s;
+    font-size: 14px; color: var(--text-dim); border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(108,92,231,0.08); }
+  .nav-item.completed .check { color: var(--green); }
+  .nav-item .check { width: 18px; font-size: 14px; }
+  .nav-item .num { font-size: 11px; opacity: 0.5; margin-left: auto; }
+
+  /* ─── Main Content ─── */
+  .main { flex:1; padding: 40px 60px; max-width: 900px; }
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+
+  h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+  h1 .chapter-num { color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 4px; font-weight: 600; }
+  h2 { font-size: 22px; font-weight: 600; margin: 32px 0 16px; color: var(--text); }
+  h3 { font-size: 17px; font-weight: 600; margin: 24px 0 12px; }
+  p { margin-bottom: 16px; color: var(--text); font-size: 15.5px; }
+  .subtitle { color: var(--text-dim); font-size: 16px; margin-bottom: 32px; }
+
+  /* ─── Cards ─── */
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px; margin: 20px 0;
+  }
+  .concept-card.highlight {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+  .concept-card.warning {
+    border-color: var(--yellow);
+    box-shadow: 0 0 20px var(--yellow-glow);
+  }
+  .concept-card.success {
+    border-color: var(--green);
+    box-shadow: 0 0 20px var(--green-glow);
+  }
+  .concept-card h4 { font-size: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .concept-card h4 .icon { font-size: 18px; }
+
+  .formula-box {
+    background: #1e2030; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px 20px;
+    font-family: 'Courier New', monospace; font-size: 15px;
+    margin: 16px 0; text-align: center; color: var(--blue);
+  }
+
+  .key-insight {
+    background: linear-gradient(135deg, rgba(108,92,231,0.1), rgba(116,185,255,0.05));
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px; margin: 20px 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 15px;
+  }
+
+  /* ─── Interactive: Availability Table ─── */
+  .nines-table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 20px 0; }
+  .nines-table th, .nines-table td {
+    padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .nines-table th { color: var(--text-dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .nines-table tr:hover td { background: rgba(108,92,231,0.05); }
+  .nines-table .nines { color: var(--accent); font-weight: 600; font-family: monospace; }
+  .nines-table .downtime { color: var(--yellow); font-family: monospace; }
+
+  /* ─── Interactive Calculator ─── */
+  .calculator {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px; margin: 24px 0;
+  }
+  .calculator h4 { margin-bottom: 16px; font-size: 16px; }
+  .calc-row { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+  .calc-label { font-size: 14px; color: var(--text-dim); min-width: 160px; }
+  .calc-input {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 8px 14px; color: var(--text);
+    font-size: 15px; width: 180px; outline: none; transition: border-color 0.2s;
+  }
+  .calc-input:focus { border-color: var(--accent); }
+  .calc-result {
+    background: rgba(0,184,148,0.08); border: 1px solid rgba(0,184,148,0.3);
+    border-radius: var(--radius-sm); padding: 16px 20px; margin-top: 16px;
+    font-size: 15px;
+  }
+  .calc-result .big { font-size: 28px; font-weight: 700; color: var(--green); }
+
+  /* ─── Slider ─── */
+  input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 6px;
+    background: var(--surface2); border-radius: 3px; outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px;
+    background: var(--accent); border-radius: 50%; cursor: pointer;
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+
+  /* ─── Quiz ─── */
+  .quiz {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px; margin: 28px 0;
+  }
+  .quiz-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .quiz-header .badge {
+    background: var(--accent); color: #fff; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 16px; line-height: 1.5; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-option {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 16px;
+    cursor: pointer; transition: all 0.2s; font-size: 14.5px;
+  }
+  .quiz-option:hover { border-color: var(--accent); background: rgba(108,92,231,0.08); }
+  .quiz-option.correct { border-color: var(--green); background: rgba(0,184,148,0.1); }
+  .quiz-option.incorrect { border-color: var(--red); background: rgba(225,112,85,0.1); }
+  .quiz-option .letter {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--bg); display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .quiz-feedback {
+    margin-top: 16px; padding: 14px 18px; border-radius: var(--radius-sm);
+    font-size: 14px; display: none; line-height: 1.6;
+  }
+  .quiz-feedback.show { display: block; animation: fadeIn 0.3s ease; }
+  .quiz-feedback.correct-fb { background: rgba(0,184,148,0.1); border: 1px solid rgba(0,184,148,0.3); }
+  .quiz-feedback.incorrect-fb { background: rgba(225,112,85,0.1); border: 1px solid rgba(225,112,85,0.3); }
+
+  /* ─── Game: Error Budget Simulator ─── */
+  .game-container {
+    background: var(--surface); border: 2px solid var(--accent);
+    border-radius: var(--radius); padding: 32px; margin: 28px 0;
+    box-shadow: 0 0 30px var(--accent-glow);
+  }
+  .game-container h3 { color: var(--accent); margin-bottom: 4px; }
+  .game-stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px; margin: 20px 0;
+  }
+  .game-stat {
+    background: var(--bg); border-radius: var(--radius-sm); padding: 14px;
+    text-align: center;
+  }
+  .game-stat .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+  .game-stat .value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+  .game-stat .value.good { color: var(--green); }
+  .game-stat .value.warn { color: var(--yellow); }
+  .game-stat .value.bad { color: var(--red); }
+
+  .budget-bar {
+    height: 24px; background: var(--bg); border-radius: 12px;
+    margin: 16px 0; overflow: hidden; position: relative;
+  }
+  .budget-bar-fill {
+    height: 100%; border-radius: 12px; transition: width 0.5s ease, background 0.5s ease;
+  }
+  .budget-bar-label {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+
+  .event-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px; margin: 16px 0;
+  }
+  .event-card h4 { margin-bottom: 8px; }
+  .event-card p { font-size: 14px; color: var(--text-dim); margin-bottom: 12px; }
+  .event-choices { display: flex; flex-direction: column; gap: 8px; }
+  .event-choice {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 16px;
+    cursor: pointer; transition: all 0.2s; font-size: 14px;
+  }
+  .event-choice:hover { border-color: var(--accent); }
+  .event-choice.selected { border-color: var(--green); background: rgba(0,184,148,0.08); pointer-events: none; }
+  .event-outcome {
+    margin-top: 12px; padding: 12px 16px; border-radius: var(--radius-sm);
+    font-size: 14px; display: none; line-height: 1.6;
+  }
+  .event-outcome.show { display: block; animation: fadeIn 0.3s ease; }
+
+  /* ─── Buttons ─── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 24px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    border: none; transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #7c6ef0; box-shadow: 0 0 20px var(--accent-glow); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-success:hover { box-shadow: 0 0 20px var(--green-glow); }
+
+  .section-nav { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); }
+
+  /* ─── Task Checklist ─── */
+  .task-list { margin: 20px 0; }
+  .task-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14.5px;
+  }
+  .task-check {
+    width: 22px; height: 22px; border-radius: 6px;
+    border: 2px solid var(--border); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0; font-size: 13px;
+  }
+  .task-check.done { background: var(--green); border-color: var(--green); }
+
+  /* ─── SVG Diagrams ─── */
+  .diagram-container { margin: 24px 0; text-align: center; }
+  .diagram-container svg { max-width: 100%; }
+
+  /* ─── Tabs ─── */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .tab {
+    padding: 8px 18px; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: var(--surface2); color: var(--text-dim); cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all 0.2s; border: 1px solid transparent;
+  }
+  .tab.active { background: var(--surface); color: var(--accent); border-color: var(--border); border-bottom-color: var(--surface); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ─── Animated Nines Visualization ─── */
+  .nines-viz { display: flex; gap: 3px; margin: 20px 0; flex-wrap: wrap; }
+  .nines-block {
+    width: 8px; height: 8px; border-radius: 2px;
+    transition: background 0.3s ease;
+  }
+  .nines-block.up { background: var(--green); }
+  .nines-block.down { background: var(--red); box-shadow: 0 0 6px var(--red-glow); }
+
+  /* ─── Welcome Hero ─── */
+  .hero {
+    text-align: center; padding: 60px 0 40px;
+  }
+  .hero h1 { font-size: 42px; margin-bottom: 16px; }
+  .hero h1 .accent { color: var(--accent); }
+  .hero .tagline { font-size: 18px; color: var(--text-dim); max-width: 500px; margin: 0 auto 32px; }
+
+  /* ─── Tooltip ─── */
+  .tooltip {
+    position: relative; display: inline; border-bottom: 1px dashed var(--accent); cursor: help;
+  }
+  .tooltip .tip-text {
+    display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 8px 12px; border-radius: var(--radius-sm);
+    font-size: 13px; white-space: nowrap; z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .tooltip:hover .tip-text { display: block; }
+
+  /* ─── Comparison visual ─── */
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .comparison .col {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .comparison .col h4 { font-size: 14px; margin-bottom: 12px; }
+  .comparison .col.good { border-color: var(--green); }
+  .comparison .col.bad { border-color: var(--red); }
+  .comparison .col ul { list-style: none; padding: 0; }
+  .comparison .col li { font-size: 14px; padding: 4px 0; color: var(--text-dim); }
+  .comparison .col li::before { margin-right: 8px; }
+  .comparison .col.good li::before { content: "✓"; color: var(--green); }
+  .comparison .col.bad li::before { content: "✗"; color: var(--red); }
+
+  /* ─── SLI Builder Interactive ─── */
+  .sli-builder {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; margin: 20px 0;
+  }
+  .sli-builder select, .sli-builder input[type="text"] {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 8px 14px; color: var(--text);
+    font-size: 14px; outline: none; width: 100%;
+  }
+  .sli-builder select:focus, .sli-builder input[type="text"]:focus { border-color: var(--accent); }
+  .sli-output {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px; margin-top: 16px;
+    font-family: 'Courier New', monospace; font-size: 14px; color: var(--blue);
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { padding: 24px; }
+    .comparison { grid-template-columns: 1fr; }
+  }
+
+  /* ─── Completion screen ─── */
+  .completion-screen {
+    text-align: center; padding: 60px 20px;
+  }
+  .completion-screen .trophy { font-size: 80px; margin-bottom: 20px; }
+  .completion-screen h1 { font-size: 36px; margin-bottom: 12px; }
+  .final-stats { display: flex; justify-content: center; gap: 32px; margin: 32px 0; }
+  .final-stat { text-align: center; }
+  .final-stat .num { font-size: 36px; font-weight: 700; color: var(--accent); }
+  .final-stat .label { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<div class="top-bar">
+  <div class="logo">SLO Mastery <span>— Interactive Tutorial</span></div>
+  <div class="progress-bar-container">
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+  </div>
+  <div class="score-display">Score: <b id="scoreDisplay">0</b></div>
+</div>
+
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="nav-group">
+    <h3>Getting Started</h3>
+    <div class="nav-item active" data-section="welcome"><span class="check">○</span> Welcome <span class="num">0</span></div>
+  </div>
+  <div class="nav-group">
+    <h3>Ch 1 — Embracing Risk</h3>
+    <div class="nav-item" data-section="s1-1"><span class="check">○</span> The 100% Trap <span class="num">1.1</span></div>
+    <div class="nav-item" data-section="s1-2"><span class="check">○</span> Measuring Risk <span class="num">1.2</span></div>
+    <div class="nav-item" data-section="s1-3"><span class="check">○</span> Cost of Reliability <span class="num">1.3</span></div>
+    <div class="nav-item" data-section="s1-4"><span class="check">○</span> Error Budgets <span class="num">1.4</span></div>
+    <div class="nav-item" data-section="s1-quiz"><span class="check">○</span> Quiz: Risk <span class="num">★</span></div>
+  </div>
+  <div class="nav-group">
+    <h3>Ch 2 — SLIs, SLOs & SLAs</h3>
+    <div class="nav-item" data-section="s2-1"><span class="check">○</span> SLI: The Signal <span class="num">2.1</span></div>
+    <div class="nav-item" data-section="s2-2"><span class="check">○</span> SLO: The Target <span class="num">2.2</span></div>
+    <div class="nav-item" data-section="s2-3"><span class="check">○</span> SLA: The Promise <span class="num">2.3</span></div>
+    <div class="nav-item" data-section="s2-4"><span class="check">○</span> Choosing SLIs <span class="num">2.4</span></div>
+    <div class="nav-item" data-section="s2-quiz"><span class="check">○</span> Quiz: SLOs <span class="num">★</span></div>
+  </div>
+  <div class="nav-group">
+    <h3>Ch 3 — Implementing SLOs</h3>
+    <div class="nav-item" data-section="s3-1"><span class="check">○</span> The SLO Process <span class="num">3.1</span></div>
+    <div class="nav-item" data-section="s3-2"><span class="check">○</span> SLI Specification <span class="num">3.2</span></div>
+    <div class="nav-item" data-section="s3-3"><span class="check">○</span> SLI → Implementation <span class="num">3.3</span></div>
+    <div class="nav-item" data-section="s3-4"><span class="check">○</span> Setting SLOs <span class="num">3.4</span></div>
+    <div class="nav-item" data-section="s3-quiz"><span class="check">○</span> Quiz: Impl. <span class="num">★</span></div>
+  </div>
+  <div class="nav-group">
+    <h3>Final Challenge</h3>
+    <div class="nav-item" data-section="game"><span class="check">○</span> Error Budget Game <span class="num">🎮</span></div>
+    <div class="nav-item" data-section="sli-lab"><span class="check">○</span> SLI Builder Lab <span class="num">🔬</span></div>
+    <div class="nav-item" data-section="completion"><span class="check">○</span> Graduation <span class="num">🎓</span></div>
+  </div>
+</div>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<div class="main">
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- WELCOME -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section active" id="welcome">
+  <div class="hero">
+    <h1>Master <span class="accent">SLOs</span></h1>
+    <p class="tagline">An interactive deep-dive into Google's SRE approach to risk, reliability, and Service Level Objectives. Based on the SRE Book and SRE Workbook.</p>
+  </div>
+
+  <div class="concept-card highlight">
+    <h4><span class="icon">📘</span> What you'll learn</h4>
+    <p style="margin-bottom:8px;">This tutorial covers three core chapters from Google's SRE canon:</p>
+    <p><strong>Chapter 1: Embracing Risk</strong> — Why 100% reliability is the wrong goal, how to think about risk as a continuum, and the revolutionary concept of error budgets.</p>
+    <p><strong>Chapter 2: Service Level Objectives</strong> — The SLI → SLO → SLA hierarchy, how to pick the right indicators, and how to set targets that actually work.</p>
+    <p style="margin-bottom:0;"><strong>Chapter 3: Implementing SLOs</strong> — The practical playbook: from specification to measurement, dashboards, alerts, and decision-making.</p>
+  </div>
+
+  <div class="concept-card">
+    <h4><span class="icon">🎮</span> How it works</h4>
+    <p style="margin-bottom:8px;">This isn't a passive read. You'll encounter:</p>
+    <p>
+      <strong>Interactive calculators</strong> to build intuition with real numbers.
+      <strong>Quizzes</strong> after each chapter to test understanding.
+      <strong>A simulation game</strong> where you manage a real error budget under pressure.
+      <strong>An SLI Builder Lab</strong> where you design SLIs for different service types.
+    </p>
+    <p style="margin-bottom:0;">Points are tracked throughout. Aim for 100%.</p>
+  </div>
+
+  <div class="section-nav" style="justify-content:flex-end;">
+    <button class="btn btn-primary" onclick="goTo('s1-1')">Start Chapter 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 1.1: THE 100% TRAP -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s1-1">
+  <h1><span class="chapter-num">Chapter 1</span>The 100% Reliability Trap</h1>
+  <p class="subtitle">Why pursuing perfection will destroy your product</p>
+
+  <p>Here's the core insight that drives everything in SRE: <strong>you should never aim for 100% reliability</strong>. Not because you can't get close — but because the cost of the last fraction of reliability grows exponentially, while the user can't even tell the difference.</p>
+
+  <div class="key-insight">
+    <strong>Key Insight:</strong> Users don't experience your service in isolation. Their experience is bounded by the reliability of everything between them and you — their ISP, their WiFi, their device. If a user's laptop crashes 1% of the time, they can't tell the difference between 99.99% and 99.999% availability from your service.
+  </div>
+
+  <h2>The reliability stack</h2>
+  <p>Think of it this way: a user's end-to-end experience passes through many layers, each with its own failure rate. Your service is just one layer.</p>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#6c5ce7"/>
+          <stop offset="100%" stop-color="#74b9ff"/>
+        </linearGradient>
+      </defs>
+      <!-- Layers -->
+      <rect x="50" y="20" width="600" height="40" rx="8" fill="#2d3436" stroke="#636e72" stroke-width="1"/>
+      <text x="350" y="45" text-anchor="middle" fill="#dfe6e9" font-size="14" font-weight="600">User's Device & OS  (~99%)</text>
+
+      <rect x="90" y="70" width="520" height="40" rx="8" fill="#2d3436" stroke="#636e72" stroke-width="1"/>
+      <text x="350" y="95" text-anchor="middle" fill="#dfe6e9" font-size="14" font-weight="600">Local Network / WiFi  (~99.9%)</text>
+
+      <rect x="130" y="120" width="440" height="40" rx="8" fill="#2d3436" stroke="#636e72" stroke-width="1"/>
+      <text x="350" y="145" text-anchor="middle" fill="#dfe6e9" font-size="14" font-weight="600">ISP / Internet  (~99.9%)</text>
+
+      <rect x="170" y="170" width="360" height="40" rx="8" fill="url(#g1)" fill-opacity="0.3" stroke="#6c5ce7" stroke-width="2"/>
+      <text x="350" y="195" text-anchor="middle" fill="#a29bfe" font-size="14" font-weight="700">⭐ Your Service  (99.99%?)</text>
+
+      <text x="350" y="240" text-anchor="middle" fill="#636e72" font-size="13">Effective availability ≈ product of all layers ≈ 98.8%</text>
+    </svg>
+  </div>
+
+  <p>Even if your service achieves five 9s (99.999%), the user's effective availability is still capped by the weakest link — often their own network. So over-investing in that last 0.009% of reliability is money spent where users can't feel it.</p>
+
+  <h2>What happens when you chase 100%</h2>
+
+  <div class="comparison">
+    <div class="col bad">
+      <h4>❌ The 100% mindset</h4>
+      <ul>
+        <li>Every release is terrifying</li>
+        <li>Feature velocity grinds to zero</li>
+        <li>Engineers are afraid to deploy</li>
+        <li>Change is the enemy</li>
+        <li>Product stagnates</li>
+      </ul>
+    </div>
+    <div class="col good">
+      <h4>✓ The SRE mindset</h4>
+      <ul>
+        <li>Target = "reliable enough"</li>
+        <li>Planned risk budget for innovation</li>
+        <li>Deploy frequently with confidence</li>
+        <li>Change is managed, not avoided</li>
+        <li>Product evolves rapidly</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('welcome')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s1-2')">Next: Measuring Risk →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 1.2: MEASURING RISK -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s1-2">
+  <h1><span class="chapter-num">Chapter 1</span>Measuring Service Risk</h1>
+  <p class="subtitle">Putting numbers on reliability</p>
+
+  <p>Google primarily measures service risk as <strong>unplanned downtime</strong>. There are two ways to express this: time-based and aggregate availability.</p>
+
+  <h2>Time-based availability</h2>
+  <div class="formula-box">
+    availability = uptime / (uptime + downtime)
+  </div>
+  <p>This works for simple systems, but breaks down for globally distributed services that are never fully "up" or "down." A service might be degraded for some users while fine for others.</p>
+
+  <h2>Aggregate availability (request success rate)</h2>
+  <p>For request-serving systems, Google uses a more practical formula:</p>
+  <div class="formula-box">
+    availability = successful requests / total requests
+  </div>
+  <p>This captures partial failures naturally. If your service handles 2.5 million requests/day and you want 99.99% availability, you can afford <strong>250 failed requests per day</strong>. Not zero. Two hundred and fifty.</p>
+
+  <h2>The table of nines</h2>
+  <p>Hover over any row to see what that level of availability means in practice:</p>
+
+  <table class="nines-table">
+    <thead><tr><th>Availability</th><th>Nines</th><th>Downtime / Year</th><th>Downtime / Quarter</th><th>Failed Req / Million</th></tr></thead>
+    <tbody>
+      <tr><td class="nines">90%</td><td>One 9</td><td class="downtime">36.5 days</td><td class="downtime">9.1 days</td><td>100,000</td></tr>
+      <tr><td class="nines">99%</td><td>Two 9s</td><td class="downtime">3.65 days</td><td class="downtime">21.9 hours</td><td>10,000</td></tr>
+      <tr><td class="nines">99.9%</td><td>Three 9s</td><td class="downtime">8.76 hours</td><td class="downtime">2.19 hours</td><td>1,000</td></tr>
+      <tr><td class="nines">99.95%</td><td>Three and a half 9s</td><td class="downtime">4.38 hours</td><td class="downtime">1.09 hours</td><td>500</td></tr>
+      <tr><td class="nines">99.99%</td><td>Four 9s</td><td class="downtime">52.6 minutes</td><td class="downtime">13.1 minutes</td><td>100</td></tr>
+      <tr><td class="nines">99.999%</td><td>Five 9s</td><td class="downtime">5.26 minutes</td><td class="downtime">1.31 minutes</td><td>10</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Visualize it</h2>
+  <p>Each block below represents one request out of 1,000. Use the slider to change the availability target and see how many failures (red blocks) are allowed:</p>
+
+  <div class="calculator">
+    <div class="calc-row">
+      <span class="calc-label">Availability target:</span>
+      <input type="range" id="ninesSlider" min="900" max="999" value="990" style="flex:1;">
+      <span id="ninesValue" style="font-family:monospace;font-weight:700;color:var(--accent);min-width:60px;text-align:right;">99.0%</span>
+    </div>
+    <div class="nines-viz" id="ninesViz"></div>
+    <div class="calc-result">
+      <span id="ninesExplain">With 99.0% availability, <strong>10 out of every 1,000 requests</strong> can fail.</span>
+    </div>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s1-1')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s1-3')">Next: Cost of Reliability →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 1.3: COST OF RELIABILITY -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s1-3">
+  <h1><span class="chapter-num">Chapter 1</span>The Cost of Reliability</h1>
+  <p class="subtitle">More nines costs exponentially more — and eventually isn't worth it</p>
+
+  <p>Increasing reliability has two major cost dimensions:</p>
+
+  <div class="concept-card">
+    <h4><span class="icon">💰</span> Cost of redundant infrastructure</h4>
+    <p style="margin:0;">More servers, more replicas, multi-region deployment, automatic failover, better hardware. Each additional nine roughly <strong>multiplies</strong> infrastructure cost.</p>
+  </div>
+
+  <div class="concept-card">
+    <h4><span class="icon">🐌</span> Cost of reduced velocity</h4>
+    <p style="margin:0;">To hit very high reliability targets, you need more testing, slower rollouts, fewer changes, longer review cycles. Your ability to ship features drops. This is the <strong>opportunity cost</strong> and it's often the bigger cost.</p>
+  </div>
+
+  <h2>The exponential curve</h2>
+  <p>The relationship between reliability and cost is not linear — it's exponential. Going from 99.9% to 99.99% might cost 10× what it cost to go from 99% to 99.9%.</p>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- Axes -->
+      <line x1="80" y1="250" x2="560" y2="250" stroke="#636e72" stroke-width="1"/>
+      <line x1="80" y1="250" x2="80" y2="30" stroke="#636e72" stroke-width="1"/>
+      <!-- Labels -->
+      <text x="320" y="290" text-anchor="middle" fill="#636e72" font-size="13">Reliability Target →</text>
+      <text x="25" y="140" text-anchor="middle" fill="#636e72" font-size="13" transform="rotate(-90,25,140)">Cost →</text>
+      <!-- X-axis labels -->
+      <text x="120" y="270" text-anchor="middle" fill="#b2bec3" font-size="11">99%</text>
+      <text x="220" y="270" text-anchor="middle" fill="#b2bec3" font-size="11">99.9%</text>
+      <text x="340" y="270" text-anchor="middle" fill="#b2bec3" font-size="11">99.99%</text>
+      <text x="470" y="270" text-anchor="middle" fill="#b2bec3" font-size="11">99.999%</text>
+      <!-- Exponential curve -->
+      <path d="M 100 240 Q 200 235 250 220 Q 320 190 380 140 Q 430 90 470 50 Q 510 20 540 10" fill="none" stroke="#6c5ce7" stroke-width="3"/>
+      <!-- Revenue/value line (flattening) -->
+      <path d="M 100 220 Q 200 160 280 130 Q 360 110 420 105 Q 480 102 540 100" fill="none" stroke="#00b894" stroke-width="2" stroke-dasharray="6,4"/>
+      <!-- Legend -->
+      <rect x="380" y="140" width="12" height="3" fill="#6c5ce7"/>
+      <text x="398" y="144" fill="#b2bec3" font-size="11">Cost</text>
+      <rect x="380" y="158" width="12" height="3" fill="#00b894"/>
+      <text x="398" y="162" fill="#b2bec3" font-size="11">Revenue benefit</text>
+      <!-- Sweet spot marker -->
+      <circle cx="310" cy="165" r="16" fill="none" stroke="#fdcb6e" stroke-width="2" stroke-dasharray="4,3"/>
+      <text x="310" y="170" text-anchor="middle" fill="#fdcb6e" font-size="10" font-weight="700">$</text>
+      <text x="310" y="198" text-anchor="middle" fill="#fdcb6e" font-size="10">sweet spot</text>
+    </svg>
+  </div>
+
+  <div class="key-insight">
+    <strong>The sweet spot:</strong> The optimal reliability target is where the cost curve crosses the revenue-benefit curve. Beyond that point, you're spending more on reliability than you're gaining from it. This is where the error budget concept comes from — it quantifies exactly how much unreliability you can tolerate.
+  </div>
+
+  <h2>Try it: Cost calculator</h2>
+  <div class="calculator">
+    <h4>How much does one more nine cost you?</h4>
+    <div class="calc-row">
+      <span class="calc-label">Monthly revenue:</span>
+      <input class="calc-input" type="number" id="costRevenue" value="1000000" placeholder="e.g. 1000000">
+    </div>
+    <div class="calc-row">
+      <span class="calc-label">Current availability:</span>
+      <input class="calc-input" type="number" id="costCurrent" value="99.9" step="0.01" placeholder="e.g. 99.9">
+      <span style="color:var(--text-dim)">%</span>
+    </div>
+    <div class="calc-row">
+      <span class="calc-label">Target availability:</span>
+      <input class="calc-input" type="number" id="costTarget" value="99.99" step="0.01" placeholder="e.g. 99.99">
+      <span style="color:var(--text-dim)">%</span>
+    </div>
+    <button class="btn btn-primary" onclick="calculateCost()" style="margin-top:8px;">Calculate</button>
+    <div class="calc-result" id="costResult" style="display:none;"></div>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s1-2')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s1-4')">Next: Error Budgets →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 1.4: ERROR BUDGETS -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s1-4">
+  <h1><span class="chapter-num">Chapter 1</span>Error Budgets</h1>
+  <p class="subtitle">The concept that aligns product and SRE teams</p>
+
+  <p>If a service's SLO is 99.9% availability, then the <strong>error budget</strong> is the remaining 0.1%. That's the amount of unreliability you're explicitly allowed. It reframes "downtime" from a failure into a <strong>budget to be spent</strong>.</p>
+
+  <div class="formula-box">
+    error budget = 1 - SLO = 1 - 0.999 = 0.1%
+  </div>
+
+  <h2>What can you spend the error budget on?</h2>
+  <div class="concept-card">
+    <h4><span class="icon">🎯</span> Planned spending</h4>
+    <p style="margin-bottom:8px">The error budget can be "spent" on things that cause small amounts of unreliability but deliver other value:</p>
+    <p>
+      <strong>Launching new features</strong> — new code has bugs, that's normal.<br>
+      <strong>Risky experiments</strong> — A/B tests, canary deployments.<br>
+      <strong>Planned maintenance</strong> — database migrations, infrastructure changes.<br>
+      <strong>Faster release cycles</strong> — more deploys = more risk, but also more innovation.
+    </p>
+  </div>
+
+  <h2>The alignment mechanism</h2>
+  <p>This is the real genius. Without error budgets, product teams and SRE teams are in constant tension:</p>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Product side -->
+      <rect x="30" y="40" width="200" height="120" rx="12" fill="#2d3436" stroke="#e17055" stroke-width="2"/>
+      <text x="130" y="72" text-anchor="middle" fill="#e17055" font-size="14" font-weight="700">Product Team</text>
+      <text x="130" y="96" text-anchor="middle" fill="#b2bec3" font-size="12">"Ship faster!"</text>
+      <text x="130" y="116" text-anchor="middle" fill="#b2bec3" font-size="12">"More features!"</text>
+      <text x="130" y="136" text-anchor="middle" fill="#b2bec3" font-size="12">"Move fast!"</text>
+      <!-- Arrow -->
+      <text x="290" y="100" text-anchor="middle" fill="#636e72" font-size="24">⚡</text>
+      <text x="290" y="125" text-anchor="middle" fill="#636e72" font-size="11">TENSION</text>
+      <!-- SRE side -->
+      <rect x="340" y="40" width="200" height="120" rx="12" fill="#2d3436" stroke="#00b894" stroke-width="2"/>
+      <text x="440" y="72" text-anchor="middle" fill="#00b894" font-size="14" font-weight="700">SRE Team</text>
+      <text x="440" y="96" text-anchor="middle" fill="#b2bec3" font-size="12">"Don't break things!"</text>
+      <text x="440" y="116" text-anchor="middle" fill="#b2bec3" font-size="12">"More testing!"</text>
+      <text x="440" y="136" text-anchor="middle" fill="#b2bec3" font-size="12">"Slow down!"</text>
+      <!-- Error Budget resolution -->
+      <rect x="560" y="55" width="130" height="90" rx="10" fill="#6c5ce7" fill-opacity="0.2" stroke="#6c5ce7" stroke-width="2"/>
+      <text x="625" y="85" text-anchor="middle" fill="#a29bfe" font-size="12" font-weight="700">Error Budget</text>
+      <text x="625" y="107" text-anchor="middle" fill="#b2bec3" font-size="11">Objective</text>
+      <text x="625" y="125" text-anchor="middle" fill="#b2bec3" font-size="11">arbiter</text>
+    </svg>
+  </div>
+
+  <p>With an error budget, both teams share the same objective metric. If there's budget remaining, product can push features. If the budget is spent, everyone focuses on reliability. No arguments, no politics — just data.</p>
+
+  <h2>Error budget policies</h2>
+  <p>When the error budget is exhausted, the team enacts pre-agreed policies:</p>
+
+  <div class="comparison">
+    <div class="col good">
+      <h4>Budget remaining ✓</h4>
+      <ul>
+        <li>Ship features aggressively</li>
+        <li>Allow risky experiments</li>
+        <li>Fast-track deployments</li>
+        <li>Toil reduction is optional</li>
+      </ul>
+    </div>
+    <div class="col bad">
+      <h4>Budget exhausted ✗</h4>
+      <ul>
+        <li>Freeze feature launches</li>
+        <li>Focus on reliability fixes</li>
+        <li>Increase testing requirements</li>
+        <li>Slow down release cadence</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Try it: Error budget calculator</h2>
+  <div class="calculator">
+    <h4>Calculate your error budget</h4>
+    <div class="calc-row">
+      <span class="calc-label">SLO target (%):</span>
+      <input class="calc-input" type="number" id="ebSlo" value="99.9" step="0.01">
+    </div>
+    <div class="calc-row">
+      <span class="calc-label">Requests per day:</span>
+      <input class="calc-input" type="number" id="ebRpd" value="1000000">
+    </div>
+    <div class="calc-row">
+      <span class="calc-label">Window (days):</span>
+      <input class="calc-input" type="number" id="ebWindow" value="30">
+    </div>
+    <button class="btn btn-primary" onclick="calculateEB()" style="margin-top:8px;">Calculate Budget</button>
+    <div class="calc-result" id="ebResult" style="display:none;"></div>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s1-3')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s1-quiz')">Next: Chapter 1 Quiz →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 1 QUIZ -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s1-quiz">
+  <h1><span class="chapter-num">Quiz</span>Chapter 1: Embracing Risk</h1>
+  <p class="subtitle">Test your understanding before moving on</p>
+
+  <div class="quiz" id="q1">
+    <div class="quiz-header"><span class="badge">Question 1</span></div>
+    <h4>Why does Google argue against targeting 100% availability?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q1',this,false)"><span class="letter">A</span> It's technically impossible to achieve</div>
+      <div class="quiz-option" onclick="answerQuiz('q1',this,true)"><span class="letter">B</span> The marginal cost exceeds the marginal benefit, and users can't tell the difference due to other reliability bottlenecks</div>
+      <div class="quiz-option" onclick="answerQuiz('q1',this,false)"><span class="letter">C</span> Google's infrastructure isn't reliable enough for it</div>
+      <div class="quiz-option" onclick="answerQuiz('q1',this,false)"><span class="letter">D</span> It would make the service too expensive for end users</div>
+    </div>
+    <div class="quiz-feedback" id="q1-fb"></div>
+  </div>
+
+  <div class="quiz" id="q2">
+    <div class="quiz-header"><span class="badge">Question 2</span></div>
+    <h4>Your service handles 10 million requests per day with a 99.99% SLO. How many failed requests per day are within budget?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q2',this,false)"><span class="letter">A</span> 10</div>
+      <div class="quiz-option" onclick="answerQuiz('q2',this,false)"><span class="letter">B</span> 100</div>
+      <div class="quiz-option" onclick="answerQuiz('q2',this,true)"><span class="letter">C</span> 1,000</div>
+      <div class="quiz-option" onclick="answerQuiz('q2',this,false)"><span class="letter">D</span> 10,000</div>
+    </div>
+    <div class="quiz-feedback" id="q2-fb"></div>
+  </div>
+
+  <div class="quiz" id="q3">
+    <div class="quiz-header"><span class="badge">Question 3</span></div>
+    <h4>What happens when the error budget is exhausted?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q3',this,false)"><span class="letter">A</span> The SRE team gets penalized</div>
+      <div class="quiz-option" onclick="answerQuiz('q3',this,false)"><span class="letter">B</span> The SLO is relaxed to compensate</div>
+      <div class="quiz-option" onclick="answerQuiz('q3',this,true)"><span class="letter">C</span> Feature launches are frozen and the team prioritizes reliability improvements</div>
+      <div class="quiz-option" onclick="answerQuiz('q3',this,false)"><span class="letter">D</span> The service is taken offline for maintenance</div>
+    </div>
+    <div class="quiz-feedback" id="q3-fb"></div>
+  </div>
+
+  <div class="quiz" id="q4">
+    <div class="quiz-header"><span class="badge">Question 4</span></div>
+    <h4>Which formula does Google prefer for measuring availability of request-serving systems?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q4',this,false)"><span class="letter">A</span> uptime / (uptime + downtime)</div>
+      <div class="quiz-option" onclick="answerQuiz('q4',this,true)"><span class="letter">B</span> successful requests / total requests</div>
+      <div class="quiz-option" onclick="answerQuiz('q4',this,false)"><span class="letter">C</span> 1 - (errors / total requests × time)</div>
+      <div class="quiz-option" onclick="answerQuiz('q4',this,false)"><span class="letter">D</span> mean time between failures / mean time to recovery</div>
+    </div>
+    <div class="quiz-feedback" id="q4-fb"></div>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s1-4')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s2-1')">Start Chapter 2 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 2.1: SLI -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s2-1">
+  <h1><span class="chapter-num">Chapter 2</span>SLI: The Service Level Indicator</h1>
+  <p class="subtitle">Measuring what users actually care about</p>
+
+  <p>An <strong>SLI (Service Level Indicator)</strong> is a carefully defined quantitative measure of some aspect of the level of service that is provided. Think of it as the raw signal — the thermometer reading, not the temperature target.</p>
+
+  <div class="key-insight">
+    <strong>Definition:</strong> An SLI is a ratio of two numbers: the number of good events divided by the total number of events. This yields a value between 0% and 100%, which maps naturally to an availability-like percentage.
+  </div>
+
+  <div class="formula-box">
+    SLI = good events / total events × 100%
+  </div>
+
+  <h2>Common SLI types</h2>
+
+  <div class="concept-card">
+    <h4><span class="icon">⚡</span> Availability</h4>
+    <p style="margin:0;">The proportion of requests that succeed. Could a user successfully complete their action?<br>
+    <em>Example: proportion of HTTP requests returning 2xx or 3xx out of all requests (excluding 401s and 403s).</em></p>
+  </div>
+
+  <div class="concept-card">
+    <h4><span class="icon">🏎️</span> Latency</h4>
+    <p style="margin:0;">The proportion of requests that are fast enough. Not average latency — but the proportion that complete within a threshold.<br>
+    <em>Example: proportion of requests completing in under 300ms.</em></p>
+  </div>
+
+  <div class="concept-card">
+    <h4><span class="icon">✅</span> Quality / Correctness</h4>
+    <p style="margin:0;">The proportion of responses that are correct and complete — not degraded.<br>
+    <em>Example: proportion of search results served from full index (not stale cache).</em></p>
+  </div>
+
+  <div class="concept-card">
+    <h4><span class="icon">📊</span> Freshness (for data processing)</h4>
+    <p style="margin:0;">The proportion of data records processed within an expected time window.<br>
+    <em>Example: proportion of records updated within the last 10 minutes.</em></p>
+  </div>
+
+  <div class="concept-card">
+    <h4><span class="icon">🛡️</span> Durability (for storage)</h4>
+    <p style="margin:0;">The proportion of written data that can be successfully read back.<br>
+    <em>Example: proportion of objects stored that return successfully on read.</em></p>
+  </div>
+
+  <div class="key-insight">
+    <strong>The golden rule:</strong> Your SLIs should measure what the <strong>user</strong> experiences, not what your infrastructure reports. Measure at the edge, close to the user, not deep in your backend.
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s1-quiz')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s2-2')">Next: SLO →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 2.2: SLO -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s2-2">
+  <h1><span class="chapter-num">Chapter 2</span>SLO: The Service Level Objective</h1>
+  <p class="subtitle">Setting the target — not too high, not too low</p>
+
+  <p>An <strong>SLO (Service Level Objective)</strong> is a target value or range for an SLI. It's the line in the sand that says "this is good enough."</p>
+
+  <div class="formula-box">
+    SLO: 99.9% of requests will complete successfully within 300ms, measured over a 30-day rolling window
+  </div>
+
+  <h2>Anatomy of a good SLO</h2>
+  <p>An SLO has four components:</p>
+
+  <div class="concept-card highlight">
+    <h4>The four parts of an SLO</h4>
+    <p><strong>1. The SLI</strong> — What you're measuring (e.g., request latency)<br>
+    <strong>2. The threshold</strong> — What "good" means (e.g., under 300ms)<br>
+    <strong>3. The target</strong> — What percentage must be good (e.g., 99.9%)<br>
+    <strong>4. The window</strong> — Over what time period (e.g., 30-day rolling)</p>
+  </div>
+
+  <h2>Choosing the right target</h2>
+  <p>SLOs should be set based on user expectations, business needs, and current performance — not aspirations. Google suggests working from these principles:</p>
+
+  <div class="concept-card warning">
+    <h4><span class="icon">⚠️</span> Don't set SLOs based on current performance</h4>
+    <p style="margin:0;">If your service currently runs at 99.99%, don't set the SLO at 99.99%. That leaves you zero room for the inevitable regression. Set it slightly below where you are — maybe 99.95% — so you have budget to ship features. If you set it too tight, you're back in the 100%-trap.</p>
+  </div>
+
+  <div class="concept-card success">
+    <h4><span class="icon">💡</span> Start with user happiness</h4>
+    <p style="margin:0;">Ask: "At what point would users start to notice and complain?" That's your lower bound. "At what point would further improvement not change user behavior?" That's your upper bound. Your SLO should sit somewhere in between.</p>
+  </div>
+
+  <h2>Rolling vs calendar windows</h2>
+  <div class="comparison">
+    <div class="col good">
+      <h4>Rolling window (recommended)</h4>
+      <ul>
+        <li>e.g. "last 30 days"</li>
+        <li>Aligns with user experience</li>
+        <li>No "reset" incentive</li>
+        <li>Bad week hurts for 30 days</li>
+      </ul>
+    </div>
+    <div class="col" style="border-color: var(--yellow);">
+      <h4>Calendar window</h4>
+      <ul style="list-style:none; padding:0;">
+        <li style="padding: 4px 0; color: var(--text-dim);">e.g. "per quarter"</li>
+        <li style="padding: 4px 0; color: var(--text-dim);">Aligns with business planning</li>
+        <li style="padding: 4px 0; color: var(--text-dim);">Fresh start each period</li>
+        <li style="padding: 4px 0; color: var(--text-dim);">Risk of "spending it all at month end"</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s2-1')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s2-3')">Next: SLA →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 2.3: SLA -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s2-3">
+  <h1><span class="chapter-num">Chapter 2</span>SLA: The Service Level Agreement</h1>
+  <p class="subtitle">When reliability becomes a contractual promise</p>
+
+  <p>An <strong>SLA (Service Level Agreement)</strong> is an explicit or implicit contract with your users that includes consequences for meeting or missing the SLOs it contains. The key word is <strong>consequences</strong> — usually financial (credits, refunds).</p>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg">
+      <!-- Three boxes showing hierarchy -->
+      <rect x="30" y="50" width="180" height="80" rx="10" fill="#2d3436" stroke="#74b9ff" stroke-width="2"/>
+      <text x="120" y="82" text-anchor="middle" fill="#74b9ff" font-size="15" font-weight="700">SLI</text>
+      <text x="120" y="104" text-anchor="middle" fill="#b2bec3" font-size="12">The measurement</text>
+      <text x="120" y="120" text-anchor="middle" fill="#636e72" font-size="11">"request latency"</text>
+
+      <text x="240" y="95" text-anchor="middle" fill="#636e72" font-size="20">→</text>
+
+      <rect x="260" y="50" width="180" height="80" rx="10" fill="#2d3436" stroke="#6c5ce7" stroke-width="2"/>
+      <text x="350" y="82" text-anchor="middle" fill="#a29bfe" font-size="15" font-weight="700">SLO</text>
+      <text x="350" y="104" text-anchor="middle" fill="#b2bec3" font-size="12">The target</text>
+      <text x="350" y="120" text-anchor="middle" fill="#636e72" font-size="11">"99.9% under 200ms"</text>
+
+      <text x="470" y="95" text-anchor="middle" fill="#636e72" font-size="20">→</text>
+
+      <rect x="490" y="50" width="180" height="80" rx="10" fill="#2d3436" stroke="#e17055" stroke-width="2"/>
+      <text x="580" y="82" text-anchor="middle" fill="#e17055" font-size="15" font-weight="700">SLA</text>
+      <text x="580" y="104" text-anchor="middle" fill="#b2bec3" font-size="12">The promise</text>
+      <text x="580" y="120" text-anchor="middle" fill="#636e72" font-size="11">"or 10% credit"</text>
+
+      <text x="350" y="165" text-anchor="middle" fill="#636e72" font-size="12">SLI feeds SLO, SLO is stricter than SLA. Always keep margin.</text>
+    </svg>
+  </div>
+
+  <div class="key-insight">
+    <strong>Critical rule:</strong> Your internal SLOs should always be <strong>stricter</strong> than your external SLAs. If your SLA promises 99.9%, your internal SLO should be 99.95%. This gives you a buffer — you'll catch and fix problems before they become contractual violations.
+  </div>
+
+  <div class="concept-card warning">
+    <h4><span class="icon">⚠️</span> The Chubby example</h4>
+    <p style="margin:0;">Google's Chubby (a distributed lock service) was so reliable that teams started depending on it being 100% available — far beyond its actual SLO. When it did have downtime, dozens of services failed catastrophically. Google's solution? They started <strong>deliberately taking Chubby down</strong> to burn through the error budget and force teams to handle failures properly. Being too reliable created hidden fragility.</p>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s2-2')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s2-4')">Next: Choosing SLIs →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 2.4: CHOOSING SLIs -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s2-4">
+  <h1><span class="chapter-num">Chapter 2</span>Choosing the Right SLIs</h1>
+  <p class="subtitle">Service type determines what to measure</p>
+
+  <p>Different types of services need different SLIs. The SRE Workbook provides a framework for choosing SLIs based on your service type:</p>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this, 'tab-request')">Request-Driven</div>
+    <div class="tab" onclick="switchTab(this, 'tab-pipeline')">Data Pipeline</div>
+    <div class="tab" onclick="switchTab(this, 'tab-storage')">Storage</div>
+  </div>
+
+  <div class="tab-content active" id="tab-request">
+    <div class="concept-card">
+      <h4>Request-driven services (APIs, web apps, microservices)</h4>
+      <p><strong>Availability SLI:</strong> Proportion of requests that succeed<br>
+      <strong>Latency SLI:</strong> Proportion of requests faster than threshold<br>
+      <strong>Quality SLI:</strong> Proportion of requests served without degradation</p>
+      <p style="margin:0;"><em>Example: An API gateway. Measure: successful responses / all responses, and responses under 200ms / all responses.</em></p>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-pipeline">
+    <div class="concept-card">
+      <h4>Data processing pipelines (batch jobs, ETL, stream processing)</h4>
+      <p><strong>Freshness SLI:</strong> Proportion of data updated recently enough<br>
+      <strong>Correctness SLI:</strong> Proportion of records processed correctly<br>
+      <strong>Coverage SLI:</strong> Proportion of expected data that was actually processed</p>
+      <p style="margin:0;"><em>Example: A daily analytics pipeline. Measure: proportion of reports generated within 1 hour of scheduled time.</em></p>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-storage">
+    <div class="concept-card">
+      <h4>Storage systems (databases, blob stores, file systems)</h4>
+      <p><strong>Durability SLI:</strong> Proportion of stored objects readable<br>
+      <strong>Throughput SLI:</strong> Proportion of operations completing within expected time<br>
+      <strong>Availability SLI:</strong> Proportion of read/write attempts that succeed</p>
+      <p style="margin:0;"><em>Example: A cloud object store. Measure: proportion of objects stored that can be read back within 100ms.</em></p>
+    </div>
+  </div>
+
+  <div class="key-insight">
+    <strong>Start simple:</strong> Don't try to cover every possible SLI. Pick 1-3 SLIs that best capture user happiness for your service type. You can always add more later. Too many SLIs creates noise and makes it hard to know what to act on.
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s2-3')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s2-quiz')">Next: Chapter 2 Quiz →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 2 QUIZ -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s2-quiz">
+  <h1><span class="chapter-num">Quiz</span>Chapter 2: SLIs, SLOs & SLAs</h1>
+  <p class="subtitle">Prove you know the hierarchy</p>
+
+  <div class="quiz" id="q5">
+    <div class="quiz-header"><span class="badge">Question 5</span></div>
+    <h4>What is the correct form of an SLI?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q5',this,false)"><span class="letter">A</span> A target number like "99.9%"</div>
+      <div class="quiz-option" onclick="answerQuiz('q5',this,true)"><span class="letter">B</span> A ratio of good events to total events, expressed as a percentage</div>
+      <div class="quiz-option" onclick="answerQuiz('q5',this,false)"><span class="letter">C</span> A contract with financial penalties</div>
+      <div class="quiz-option" onclick="answerQuiz('q5',this,false)"><span class="letter">D</span> An average value like "200ms mean latency"</div>
+    </div>
+    <div class="quiz-feedback" id="q5-fb"></div>
+  </div>
+
+  <div class="quiz" id="q6">
+    <div class="quiz-header"><span class="badge">Question 6</span></div>
+    <h4>Why should your internal SLO be stricter than your external SLA?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q6',this,false)"><span class="letter">A</span> To impress customers with better numbers</div>
+      <div class="quiz-option" onclick="answerQuiz('q6',this,true)"><span class="letter">B</span> So you can detect and fix problems before they become contractual violations</div>
+      <div class="quiz-option" onclick="answerQuiz('q6',this,false)"><span class="letter">C</span> Because SLAs are legally meaningless</div>
+      <div class="quiz-option" onclick="answerQuiz('q6',this,false)"><span class="letter">D</span> To give the SRE team more work</div>
+    </div>
+    <div class="quiz-feedback" id="q6-fb"></div>
+  </div>
+
+  <div class="quiz" id="q7">
+    <div class="quiz-header"><span class="badge">Question 7</span></div>
+    <h4>Why did Google deliberately take Chubby offline?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q7',this,false)"><span class="letter">A</span> For routine maintenance</div>
+      <div class="quiz-option" onclick="answerQuiz('q7',this,false)"><span class="letter">B</span> It was too expensive to run</div>
+      <div class="quiz-option" onclick="answerQuiz('q7',this,true)"><span class="letter">C</span> Teams had grown dependent on reliability far beyond the SLO, creating hidden fragility</div>
+      <div class="quiz-option" onclick="answerQuiz('q7',this,false)"><span class="letter">D</span> To test their disaster recovery plan</div>
+    </div>
+    <div class="quiz-feedback" id="q7-fb"></div>
+  </div>
+
+  <div class="quiz" id="q8">
+    <div class="quiz-header"><span class="badge">Question 8</span></div>
+    <h4>For a data processing pipeline, which SLI is most appropriate?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q8',this,false)"><span class="letter">A</span> Request latency at p99</div>
+      <div class="quiz-option" onclick="answerQuiz('q8',this,true)"><span class="letter">B</span> Freshness: proportion of data updated within expected time</div>
+      <div class="quiz-option" onclick="answerQuiz('q8',this,false)"><span class="letter">C</span> HTTP 200 response ratio</div>
+      <div class="quiz-option" onclick="answerQuiz('q8',this,false)"><span class="letter">D</span> Mean time between failures</div>
+    </div>
+    <div class="quiz-feedback" id="q8-fb"></div>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s2-4')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s3-1')">Start Chapter 3 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 3.1: THE SLO PROCESS -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s3-1">
+  <h1><span class="chapter-num">Chapter 3</span>The SLO Implementation Process</h1>
+  <p class="subtitle">From theory to practice — the step-by-step playbook</p>
+
+  <p>The SRE Workbook lays out a concrete process for implementing SLOs. It's iterative — you don't need to get it perfect the first time.</p>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#636e72"/>
+        </marker>
+      </defs>
+      <!-- Step boxes -->
+      <rect x="30" y="20" width="140" height="60" rx="8" fill="#2d3436" stroke="#6c5ce7" stroke-width="2"/>
+      <text x="100" y="44" text-anchor="middle" fill="#a29bfe" font-size="11" font-weight="700">STEP 1</text>
+      <text x="100" y="62" text-anchor="middle" fill="#dfe6e9" font-size="12">Choose SLIs</text>
+      <line x1="170" y1="50" x2="210" y2="50" stroke="#636e72" marker-end="url(#arrow)"/>
+
+      <rect x="210" y="20" width="140" height="60" rx="8" fill="#2d3436" stroke="#6c5ce7" stroke-width="2"/>
+      <text x="280" y="44" text-anchor="middle" fill="#a29bfe" font-size="11" font-weight="700">STEP 2</text>
+      <text x="280" y="62" text-anchor="middle" fill="#dfe6e9" font-size="12">Define SLI specs</text>
+      <line x1="350" y1="50" x2="390" y2="50" stroke="#636e72" marker-end="url(#arrow)"/>
+
+      <rect x="390" y="20" width="140" height="60" rx="8" fill="#2d3436" stroke="#6c5ce7" stroke-width="2"/>
+      <text x="460" y="44" text-anchor="middle" fill="#a29bfe" font-size="11" font-weight="700">STEP 3</text>
+      <text x="460" y="62" text-anchor="middle" fill="#dfe6e9" font-size="12">Implement SLIs</text>
+      <line x1="530" y1="50" x2="540" y2="50" stroke="#636e72"/>
+      <line x1="540" y1="50" x2="540" y2="120" stroke="#636e72"/>
+      <line x1="540" y1="120" x2="530" y2="120" stroke="#636e72" marker-end="url(#arrow)"/>
+
+      <rect x="390" y="90" width="140" height="60" rx="8" fill="#2d3436" stroke="#00b894" stroke-width="2"/>
+      <text x="460" y="114" text-anchor="middle" fill="#00b894" font-size="11" font-weight="700">STEP 4</text>
+      <text x="460" y="132" text-anchor="middle" fill="#dfe6e9" font-size="12">Set SLO targets</text>
+      <line x1="390" y1="120" x2="350" y2="120" stroke="#636e72" marker-end="url(#arrow)"/>
+
+      <rect x="210" y="90" width="140" height="60" rx="8" fill="#2d3436" stroke="#00b894" stroke-width="2"/>
+      <text x="280" y="114" text-anchor="middle" fill="#00b894" font-size="11" font-weight="700">STEP 5</text>
+      <text x="280" y="132" text-anchor="middle" fill="#dfe6e9" font-size="12">Error budget policy</text>
+      <line x1="210" y1="120" x2="170" y2="120" stroke="#636e72" marker-end="url(#arrow)"/>
+
+      <rect x="30" y="90" width="140" height="60" rx="8" fill="#2d3436" stroke="#fdcb6e" stroke-width="2"/>
+      <text x="100" y="114" text-anchor="middle" fill="#fdcb6e" font-size="11" font-weight="700">STEP 6</text>
+      <text x="100" y="132" text-anchor="middle" fill="#dfe6e9" font-size="12">Dashboard & alert</text>
+      <line x1="100" y1="150" x2="100" y2="180" stroke="#636e72" marker-end="url(#arrow)"/>
+
+      <!-- Iterate loop -->
+      <rect x="30" y="180" width="500" height="50" rx="8" fill="rgba(108,92,231,0.1)" stroke="#6c5ce7" stroke-width="1" stroke-dasharray="6,3"/>
+      <text x="280" y="210" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">↻ ITERATE: Refine SLIs, adjust SLOs based on data, improve alerting</text>
+
+      <!-- Legend -->
+      <text x="30" y="270" fill="#636e72" font-size="12">Tip: This is iterative. Start with a rough draft,</text>
+      <text x="30" y="288" fill="#636e72" font-size="12">measure for a few weeks, then refine. Perfection is</text>
+      <text x="30" y="306" fill="#636e72" font-size="12">the enemy of good SLOs.</text>
+    </svg>
+  </div>
+
+  <div class="concept-card success">
+    <h4><span class="icon">🔄</span> The iteration principle</h4>
+    <p style="margin:0;">The SRE Workbook emphasizes repeatedly: <strong>don't try to get SLOs perfect from day one</strong>. Start with something reasonable, measure real user experience against it, and refine. A mediocre SLO that exists is infinitely more useful than a perfect SLO that doesn't.</p>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s2-quiz')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s3-2')">Next: SLI Specification →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 3.2: SLI SPECIFICATION -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s3-2">
+  <h1><span class="chapter-num">Chapter 3</span>SLI Specification</h1>
+  <p class="subtitle">From vague idea to precise definition</p>
+
+  <p>An SLI specification is the formal description of what you're measuring — in plain language, before you worry about how to actually measure it. The Workbook separates <strong>specification</strong> (what) from <strong>implementation</strong> (how).</p>
+
+  <h2>Example: The online shop</h2>
+  <p>The SRE Workbook walks through a fictional company to illustrate. Let's follow along:</p>
+
+  <div class="concept-card">
+    <h4><span class="icon">🛒</span> Scenario: "Game of SLOs" online shop</h4>
+    <p>An e-commerce site with an API, a web frontend, and a data pipeline for generating product recommendations. The team needs SLOs for all three.</p>
+  </div>
+
+  <h3>Step 1: List your user journeys</h3>
+  <p>Before picking SLIs, identify what users actually do:</p>
+
+  <div class="task-list" id="journeyTasks">
+    <div class="task-item"><div class="task-check" onclick="toggleTask(this)"></div> Browse product catalog</div>
+    <div class="task-item"><div class="task-check" onclick="toggleTask(this)"></div> Search for products</div>
+    <div class="task-item"><div class="task-check" onclick="toggleTask(this)"></div> Add to cart</div>
+    <div class="task-item"><div class="task-check" onclick="toggleTask(this)"></div> Complete checkout (payment)</div>
+    <div class="task-item"><div class="task-check" onclick="toggleTask(this)"></div> View order history</div>
+    <div class="task-item"><div class="task-check" onclick="toggleTask(this)"></div> See personalized recommendations</div>
+  </div>
+  <p style="font-size:13px;color:var(--text-dim);">Click each journey as you think about what SLIs it needs.</p>
+
+  <h3>Step 2: Map journeys to SLI types</h3>
+
+  <table class="nines-table">
+    <thead><tr><th>User Journey</th><th>SLI Type</th><th>SLI Specification</th></tr></thead>
+    <tbody>
+      <tr><td>Browse catalog</td><td>Availability, Latency</td><td>Proportion of page loads that succeed and complete within 1s</td></tr>
+      <tr><td>Search</td><td>Availability, Latency, Quality</td><td>Proportion of searches returning results within 500ms from full index</td></tr>
+      <tr><td>Checkout</td><td>Availability</td><td>Proportion of payment requests that complete successfully</td></tr>
+      <tr><td>Recommendations</td><td>Freshness</td><td>Proportion of users seeing recommendations updated within 24h</td></tr>
+    </tbody>
+  </table>
+
+  <div class="key-insight">
+    <strong>Notice:</strong> Each journey maps to 1-2 SLI types. Not every journey needs every type. Checkout doesn't need a latency SLI (users expect it to take a few seconds). Recommendations don't need sub-second latency but do need freshness.
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s3-1')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s3-3')">Next: Implementation →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 3.3: SLI → IMPLEMENTATION -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s3-3">
+  <h1><span class="chapter-num">Chapter 3</span>From SLI Specification to Implementation</h1>
+  <p class="subtitle">Where to actually measure, and the tradeoffs of each approach</p>
+
+  <p>Once you know <em>what</em> to measure, you need to decide <em>where</em> in your stack to measure it. Each measurement point has tradeoffs:</p>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+      <!-- Measurement points -->
+      <text x="350" y="20" text-anchor="middle" fill="#dfe6e9" font-size="14" font-weight="700">Where to Measure SLIs</text>
+
+      <!-- Client -->
+      <rect x="30" y="45" width="150" height="90" rx="8" fill="#2d3436" stroke="#e17055" stroke-width="2"/>
+      <text x="105" y="72" text-anchor="middle" fill="#e17055" font-size="13" font-weight="700">Client-side</text>
+      <text x="105" y="92" text-anchor="middle" fill="#b2bec3" font-size="11">JS instrumentation</text>
+      <text x="105" y="108" text-anchor="middle" fill="#b2bec3" font-size="11">Mobile SDK</text>
+      <text x="105" y="124" text-anchor="middle" fill="#00b894" font-size="10">✓ Most accurate</text>
+
+      <!-- Load balancer -->
+      <rect x="200" y="45" width="150" height="90" rx="8" fill="#2d3436" stroke="#6c5ce7" stroke-width="2"/>
+      <text x="275" y="72" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="700">Load Balancer</text>
+      <text x="275" y="92" text-anchor="middle" fill="#b2bec3" font-size="11">LB access logs</text>
+      <text x="275" y="108" text-anchor="middle" fill="#b2bec3" font-size="11">Ingress metrics</text>
+      <text x="275" y="124" text-anchor="middle" fill="#fdcb6e" font-size="10">★ Best balance</text>
+
+      <!-- Server -->
+      <rect x="370" y="45" width="150" height="90" rx="8" fill="#2d3436" stroke="#74b9ff" stroke-width="2"/>
+      <text x="445" y="72" text-anchor="middle" fill="#74b9ff" font-size="13" font-weight="700">Server-side</text>
+      <text x="445" y="92" text-anchor="middle" fill="#b2bec3" font-size="11">App metrics</text>
+      <text x="445" y="108" text-anchor="middle" fill="#b2bec3" font-size="11">Middleware logs</text>
+      <text x="445" y="124" text-anchor="middle" fill="#b2bec3" font-size="10">Easiest to set up</text>
+
+      <!-- Synthetic -->
+      <rect x="540" y="45" width="140" height="90" rx="8" fill="#2d3436" stroke="#00b894" stroke-width="2"/>
+      <text x="610" y="72" text-anchor="middle" fill="#00b894" font-size="13" font-weight="700">Synthetic</text>
+      <text x="610" y="92" text-anchor="middle" fill="#b2bec3" font-size="11">Probes / pings</text>
+      <text x="610" y="108" text-anchor="middle" fill="#b2bec3" font-size="11">Canary requests</text>
+      <text x="610" y="124" text-anchor="middle" fill="#b2bec3" font-size="10">Good for baselines</text>
+
+      <!-- Tradeoff spectrum -->
+      <line x1="50" y1="170" x2="660" y2="170" stroke="#636e72" stroke-width="1"/>
+      <text x="50" y="190" fill="#e17055" font-size="11">← Closest to user experience</text>
+      <text x="660" y="190" text-anchor="end" fill="#74b9ff" font-size="11">Easiest to implement →</text>
+
+      <text x="50" y="215" fill="#636e72" font-size="11">Hardest to collect</text>
+      <text x="660" y="215" text-anchor="end" fill="#636e72" font-size="11">Misses client-side issues</text>
+
+      <text x="350" y="255" text-anchor="middle" fill="#fdcb6e" font-size="12" font-weight="600">★ Recommendation: Start at the load balancer level.</text>
+      <text x="350" y="273" text-anchor="middle" fill="#636e72" font-size="11">It captures most user-facing issues without requiring client instrumentation.</text>
+    </svg>
+  </div>
+
+  <div class="concept-card highlight">
+    <h4><span class="icon">🎯</span> Implementation example</h4>
+    <p><strong>SLI Specification:</strong> "The proportion of valid HTTP requests that return a successful response within 300ms."</p>
+    <p style="margin:0;"><strong>SLI Implementation:</strong> "Count of load balancer log entries with status code != 5xx AND duration < 300ms, divided by count of all log entries excluding 4xx, measured over 1-minute windows, aggregated into a Prometheus metric."</p>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s3-2')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s3-4')">Next: Setting SLOs →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 3.4: SETTING SLOs -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s3-4">
+  <h1><span class="chapter-num">Chapter 3</span>Setting SLOs in Practice</h1>
+  <p class="subtitle">Achievable vs aspirational, and getting buy-in</p>
+
+  <p>The Workbook distinguishes between two types of SLOs:</p>
+
+  <div class="comparison">
+    <div class="col good">
+      <h4>Achievable SLOs</h4>
+      <ul>
+        <li>Based on current system performance</li>
+        <li>You can meet them today</li>
+        <li>Used for error budget enforcement</li>
+        <li>Drive day-to-day decisions</li>
+      </ul>
+    </div>
+    <div class="col" style="border-color: var(--accent);">
+      <h4 style="color:var(--accent);">Aspirational SLOs</h4>
+      <ul style="list-style:none;padding:0;">
+        <li style="padding:4px 0;color:var(--text-dim);">Require engineering investment</li>
+        <li style="padding:4px 0;color:var(--text-dim);">Can't meet them yet</li>
+        <li style="padding:4px 0;color:var(--text-dim);">Used for roadmap planning</li>
+        <li style="padding:4px 0;color:var(--text-dim);">Drive quarterly/annual goals</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>The SLO document</h2>
+  <p>Every service should have a short document that captures its SLOs. Here's what to include:</p>
+
+  <div class="concept-card">
+    <h4><span class="icon">📄</span> SLO Document Template</h4>
+    <p><strong>1. Service overview</strong> — One paragraph: what the service does and who uses it.</p>
+    <p><strong>2. SLIs</strong> — For each SLI: specification, implementation details, and measurement point.</p>
+    <p><strong>3. SLOs</strong> — For each SLI: the target percentage and measurement window.</p>
+    <p><strong>4. Error budget</strong> — How much budget exists per window, and current consumption.</p>
+    <p><strong>5. Error budget policy</strong> — What happens when the budget is exhausted: who gets paged, what gets frozen, what the escalation path is.</p>
+    <p style="margin:0;"><strong>6. Rationale</strong> — Why these specific targets were chosen. This helps future you understand the tradeoffs.</p>
+  </div>
+
+  <h2>Alerting on SLOs</h2>
+  <p>The Workbook recommends burn-rate alerting over simple threshold alerting:</p>
+
+  <div class="concept-card warning">
+    <h4><span class="icon">🔔</span> Burn rate alerts</h4>
+    <p>Instead of alerting when the error rate exceeds a threshold, alert when you're <strong>consuming error budget faster than you can afford</strong>. A "burn rate" of 1 means you'll exactly exhaust your 30-day budget in 30 days. A burn rate of 10 means you'll exhaust it in 3 days.</p>
+    <p style="margin:0;"><strong>Multi-window:</strong> Use a fast window (e.g. 5 minutes) and a slow window (e.g. 1 hour) together. This catches both sudden spikes and slow burns while reducing false positives.</p>
+  </div>
+
+  <div class="formula-box">
+    burn rate = (error rate observed) / (error rate allowed by SLO)<br><br>
+    If SLO = 99.9% over 30 days → allowed error rate = 0.1%<br>
+    If current error rate = 1% → burn rate = 1% / 0.1% = 10×
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s3-3')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s3-quiz')">Next: Chapter 3 Quiz →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHAPTER 3 QUIZ -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="s3-quiz">
+  <h1><span class="chapter-num">Quiz</span>Chapter 3: Implementing SLOs</h1>
+  <p class="subtitle">The practical stuff</p>
+
+  <div class="quiz" id="q9">
+    <div class="quiz-header"><span class="badge">Question 9</span></div>
+    <h4>Where does the SRE Workbook recommend measuring SLIs as a practical starting point?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q9',this,false)"><span class="letter">A</span> Client-side JavaScript instrumentation</div>
+      <div class="quiz-option" onclick="answerQuiz('q9',this,true)"><span class="letter">B</span> At the load balancer / ingress layer</div>
+      <div class="quiz-option" onclick="answerQuiz('q9',this,false)"><span class="letter">C</span> At the database query level</div>
+      <div class="quiz-option" onclick="answerQuiz('q9',this,false)"><span class="letter">D</span> Using synthetic monitoring exclusively</div>
+    </div>
+    <div class="quiz-feedback" id="q9-fb"></div>
+  </div>
+
+  <div class="quiz" id="q10">
+    <div class="quiz-header"><span class="badge">Question 10</span></div>
+    <h4>What does a burn rate of 10× mean?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q10',this,false)"><span class="letter">A</span> The service is 10 times faster than normal</div>
+      <div class="quiz-option" onclick="answerQuiz('q10',this,false)"><span class="letter">B</span> 10% of requests are failing</div>
+      <div class="quiz-option" onclick="answerQuiz('q10',this,true)"><span class="letter">C</span> The error budget is being consumed 10× faster than sustainable — it will be exhausted in 1/10th of the window</div>
+      <div class="quiz-option" onclick="answerQuiz('q10',this,false)"><span class="letter">D</span> The SLO target needs to be reduced by 10×</div>
+    </div>
+    <div class="quiz-feedback" id="q10-fb"></div>
+  </div>
+
+  <div class="quiz" id="q11">
+    <div class="quiz-header"><span class="badge">Question 11</span></div>
+    <h4>What's the difference between an achievable SLO and an aspirational SLO?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q11',this,false)"><span class="letter">A</span> Achievable SLOs are internal; aspirational SLOs are customer-facing</div>
+      <div class="quiz-option" onclick="answerQuiz('q11',this,false)"><span class="letter">B</span> Achievable SLOs have consequences; aspirational SLOs don't</div>
+      <div class="quiz-option" onclick="answerQuiz('q11',this,true)"><span class="letter">C</span> Achievable SLOs reflect current capability and drive daily decisions; aspirational SLOs require investment and drive roadmap planning</div>
+      <div class="quiz-option" onclick="answerQuiz('q11',this,false)"><span class="letter">D</span> There is no meaningful difference; they're interchangeable terms</div>
+    </div>
+    <div class="quiz-feedback" id="q11-fb"></div>
+  </div>
+
+  <div class="quiz" id="q12">
+    <div class="quiz-header"><span class="badge">Question 12</span></div>
+    <h4>What should be in an error budget policy?</h4>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="answerQuiz('q12',this,false)"><span class="letter">A</span> A list of engineers who will be fired if the budget runs out</div>
+      <div class="quiz-option" onclick="answerQuiz('q12',this,true)"><span class="letter">B</span> Pre-agreed actions for when budget is exhausted: feature freezes, reliability focus, escalation paths</div>
+      <div class="quiz-option" onclick="answerQuiz('q12',this,false)"><span class="letter">C</span> The financial cost of each percentage point of downtime</div>
+      <div class="quiz-option" onclick="answerQuiz('q12',this,false)"><span class="letter">D</span> A histogram of past outages</div>
+    </div>
+    <div class="quiz-feedback" id="q12-fb"></div>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s3-4')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('game')">Next: Error Budget Game →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- GAME: ERROR BUDGET SIMULATOR -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="game">
+  <h1><span class="chapter-num">Final Challenge</span>Error Budget Simulator</h1>
+  <p class="subtitle">You're the SRE lead. Manage your team's error budget over a 30-day window.</p>
+
+  <div class="game-container">
+    <h3>🎮 Error Budget Manager</h3>
+    <p style="color:var(--text-dim);font-size:14px;margin-top:4px;">Your SLO is 99.9% over 30 days. You handle 1M requests/day. That gives you a budget of 30,000 failed requests for the month. Events will appear — make decisions wisely.</p>
+
+    <div class="game-stats">
+      <div class="game-stat"><div class="label">Day</div><div class="value good" id="gameDay">1</div></div>
+      <div class="game-stat"><div class="label">Budget Used</div><div class="value good" id="gameBudgetUsed">0</div></div>
+      <div class="game-stat"><div class="label">Budget Left</div><div class="value good" id="gameBudgetLeft">30,000</div></div>
+      <div class="game-stat"><div class="label">Features Shipped</div><div class="value" id="gameFeatures" style="color:var(--accent);">0</div></div>
+      <div class="game-stat"><div class="label">Status</div><div class="value good" id="gameStatus">Active</div></div>
+    </div>
+
+    <div class="budget-bar">
+      <div class="budget-bar-fill" id="budgetBarFill" style="width:100%;background:var(--green);"></div>
+      <div class="budget-bar-label" id="budgetBarLabel">100% remaining</div>
+    </div>
+
+    <div id="gameEvents"></div>
+
+    <div id="gameControls" style="margin-top:16px;">
+      <button class="btn btn-primary" id="gameStartBtn" onclick="startGame()">Start Simulation</button>
+    </div>
+
+    <div id="gameResult" style="display:none;margin-top:20px;"></div>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('s3-quiz')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('sli-lab')">Next: SLI Builder Lab →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SLI BUILDER LAB -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="sli-lab">
+  <h1><span class="chapter-num">Lab</span>SLI Builder</h1>
+  <p class="subtitle">Design SLIs for real-world services</p>
+
+  <div class="sli-builder">
+    <h4 style="margin-bottom:16px;">Build an SLI specification</h4>
+
+    <div class="calc-row">
+      <span class="calc-label">Service type:</span>
+      <select id="sliServiceType" onchange="updateSLIBuilder()">
+        <option value="">Select...</option>
+        <option value="api">REST API</option>
+        <option value="web">Web Application</option>
+        <option value="pipeline">Data Pipeline</option>
+        <option value="storage">Storage Service</option>
+        <option value="streaming">Event Streaming</option>
+      </select>
+    </div>
+
+    <div class="calc-row">
+      <span class="calc-label">SLI category:</span>
+      <select id="sliCategory" onchange="updateSLIBuilder()">
+        <option value="">Select...</option>
+        <option value="availability">Availability</option>
+        <option value="latency">Latency</option>
+        <option value="quality">Quality / Correctness</option>
+        <option value="freshness">Freshness</option>
+        <option value="durability">Durability</option>
+      </select>
+    </div>
+
+    <div class="calc-row">
+      <span class="calc-label">Good event definition:</span>
+      <input type="text" id="sliGood" placeholder="e.g. response status 2xx AND latency < 300ms" oninput="updateSLIBuilder()">
+    </div>
+
+    <div class="calc-row">
+      <span class="calc-label">Total event definition:</span>
+      <input type="text" id="sliTotal" placeholder="e.g. all valid HTTP requests (excluding health checks)" oninput="updateSLIBuilder()">
+    </div>
+
+    <div class="calc-row">
+      <span class="calc-label">Measurement point:</span>
+      <select id="sliMeasure" onchange="updateSLIBuilder()">
+        <option value="">Select...</option>
+        <option value="client">Client-side instrumentation</option>
+        <option value="lb">Load balancer / ingress logs</option>
+        <option value="server">Application server metrics</option>
+        <option value="synthetic">Synthetic probes</option>
+      </select>
+    </div>
+
+    <div class="calc-row">
+      <span class="calc-label">SLO target (%):</span>
+      <input class="calc-input" type="number" id="sliTarget" value="99.9" step="0.01" style="width:120px;" oninput="updateSLIBuilder()">
+    </div>
+
+    <div class="calc-row">
+      <span class="calc-label">Window:</span>
+      <select id="sliWindow" onchange="updateSLIBuilder()">
+        <option value="30d-rolling">30-day rolling</option>
+        <option value="7d-rolling">7-day rolling</option>
+        <option value="quarterly">Calendar quarter</option>
+      </select>
+    </div>
+
+    <div class="sli-output" id="sliOutput">
+      <em style="color:var(--text-dim);">Fill in the fields above to generate your SLI/SLO specification...</em>
+    </div>
+  </div>
+
+  <div class="concept-card success">
+    <h4><span class="icon">💡</span> Tips for your SLI specification</h4>
+    <p>
+      <strong>Be specific about exclusions.</strong> Health check endpoints, admin routes, and expected 4xx errors (like 404s for missing pages) are usually excluded from availability SLIs.<br><br>
+      <strong>Use proportions, not averages.</strong> "99th percentile latency under 300ms" is better expressed as "99% of requests complete within 300ms."<br><br>
+      <strong>Document the rationale.</strong> Why 300ms and not 500ms? Why 99.9% and not 99.99%? Future you will want to know.
+    </p>
+  </div>
+
+  <div class="section-nav">
+    <button class="btn btn-secondary" onclick="goTo('game')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('completion')">Finish: Graduation →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- COMPLETION -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section" id="completion">
+  <div class="completion-screen">
+    <div class="trophy">🎓</div>
+    <h1>SLO Mastery Complete</h1>
+    <p class="subtitle" style="margin-bottom:24px;">You've covered the three core chapters of Google's SRE approach to reliability.</p>
+
+    <div class="final-stats">
+      <div class="final-stat"><div class="num" id="finalScore">0</div><div class="label">Points Earned</div></div>
+      <div class="final-stat"><div class="num" id="finalQuizzes">0</div><div class="label">Quiz Questions Right</div></div>
+      <div class="final-stat"><div class="num" id="finalSections">0</div><div class="label">Sections Completed</div></div>
+    </div>
+
+    <div class="concept-card" style="text-align:left;max-width:600px;margin:32px auto;">
+      <h4>Key takeaways</h4>
+      <p><strong>1.</strong> 100% reliability is the wrong target. Identify the optimal reliability level where cost and user happiness intersect.</p>
+      <p><strong>2.</strong> Error budgets transform the reliability conversation from tribal politics into data-driven decision-making.</p>
+      <p><strong>3.</strong> SLIs are ratios (good/total), SLOs are targets on those ratios, SLAs add contractual consequences.</p>
+      <p><strong>4.</strong> Measure at the edge, close to the user. Start at the load balancer.</p>
+      <p><strong>5.</strong> Start with rough SLOs and iterate. A mediocre SLO that exists beats a perfect SLO that doesn't.</p>
+      <p style="margin:0;"><strong>6.</strong> Use burn-rate alerting with multi-window checks for the best signal-to-noise ratio.</p>
+    </div>
+
+    <div style="margin-top:24px;">
+      <button class="btn btn-primary" onclick="goTo('welcome')" style="margin-right:8px;">← Restart Tutorial</button>
+      <button class="btn btn-success" onclick="goTo('sli-lab')">Open SLI Lab</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+// ═══ State ═══
+let score = 0;
+let quizzesCorrect = 0;
+let sectionsVisited = new Set(['welcome']);
+let answeredQuizzes = new Set();
+
+const sectionOrder = ['welcome','s1-1','s1-2','s1-3','s1-4','s1-quiz','s2-1','s2-2','s2-3','s2-4','s2-quiz','s3-1','s3-2','s3-3','s3-4','s3-quiz','game','sli-lab','completion'];
+const totalSections = sectionOrder.length;
+
+const quizFeedback = {
+  q1: { correct: "Exactly right. The cost grows exponentially while the user can't distinguish your incremental improvement from noise in other parts of the stack.", incorrect: "Not quite. The core argument is economic and perceptual: the marginal cost exceeds the marginal benefit, and users' experience is bounded by other systems (their ISP, device, etc.)." },
+  q2: { correct: "10M × 0.01% = 1,000 failed requests. That's your daily error budget.", incorrect: "Do the math: 10,000,000 × (1 - 0.9999) = 10,000,000 × 0.0001 = 1,000 requests." },
+  q3: { correct: "Right. The error budget policy kicks in: feature freezes, reliability focus, slower releases — until the budget recovers.", incorrect: "When the budget is exhausted, the pre-agreed error budget policy kicks in: freeze feature launches, focus on reliability, slow down releases." },
+  q4: { correct: "Correct. Request success rate captures partial failures naturally and works for globally distributed systems.", incorrect: "Google prefers request-based: successful_requests / total_requests. Time-based uptime/downtime breaks down for distributed systems." },
+  q5: { correct: "An SLI is fundamentally a ratio: good events / total events. This makes it a bounded percentage that's easy to reason about.", incorrect: "An SLI is a ratio of good events to total events. Not a target (that's an SLO), not a contract (that's an SLA), and never an average." },
+  q6: { correct: "The buffer between SLO and SLA gives you time to detect and fix problems before they become contractual violations.", incorrect: "The internal SLO acts as an early warning. If you only alert on SLA violations, you're already in breach when you notice." },
+  q7: { correct: "Chubby was so reliable that teams built implicit dependencies on 100% availability. Deliberate downtime forced them to build proper error handling.", incorrect: "Teams had grown dependent on Chubby's reliability far beyond its SLO. Google took it offline deliberately to force teams to handle failures, burning through the error budget on purpose." },
+  q8: { correct: "Pipelines process data, not serve requests. Freshness — whether data is updated within the expected window — is the most relevant SLI.", incorrect: "Data pipelines don't serve HTTP requests. The key question is: is the output data fresh enough? Freshness SLI is the right fit." },
+  q9: { correct: "The load balancer is the sweet spot: it captures most user-facing issues without requiring client-side instrumentation.", incorrect: "The Workbook recommends the load balancer / ingress layer as the practical starting point — it balances accuracy with ease of implementation." },
+  q10: { correct: "A burn rate of 10× means you're consuming budget 10 times faster than sustainable. A 30-day budget would be gone in 3 days at that rate.", incorrect: "Burn rate = observed error rate / allowed error rate. 10× means you'll exhaust a 30-day budget in just 3 days." },
+  q11: { correct: "Achievable SLOs are what you can deliver today and enforce via error budgets. Aspirational SLOs are what you want to reach and drive investment decisions.", incorrect: "Achievable = what you can hit now, drives daily decisions. Aspirational = requires investment, drives planning. Both are useful, for different purposes." },
+  q12: { correct: "An error budget policy pre-defines the response: feature freezes, reliability sprints, escalation paths. No arguing when the budget runs out.", incorrect: "Error budget policies define actions for when budget is exhausted: feature freezes, mandatory reliability focus, and clear escalation paths." },
+};
+
+// ═══ Navigation ═══
+function goTo(sectionId) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(sectionId).classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-section="${sectionId}"]`).classList.add('active');
+
+  sectionsVisited.add(sectionId);
+  updateProgress();
+
+  // Mark previous sections as completed
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const sec = n.getAttribute('data-section');
+    if (sectionsVisited.has(sec)) {
+      n.querySelector('.check').textContent = '✓';
+      n.classList.add('completed');
+    }
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (sectionId === 'completion') updateFinalStats();
+  if (sectionId === 's1-2') initNinesViz();
+}
+
+function updateProgress() {
+  const pct = (sectionsVisited.size / totalSections) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function updateScore(pts) {
+  score += pts;
+  document.getElementById('scoreDisplay').textContent = score;
+}
+
+// ═══ Nines Visualization ═══
+function initNinesViz() {
+  const container = document.getElementById('ninesViz');
+  if (container.children.length > 0) return;
+  for (let i = 0; i < 1000; i++) {
+    const block = document.createElement('div');
+    block.className = 'nines-block up';
+    container.appendChild(block);
+  }
+  updateNinesViz();
+}
+
+document.getElementById('ninesSlider').addEventListener('input', function() {
+  const val = this.value / 10;
+  document.getElementById('ninesValue').textContent = val.toFixed(1) + '%';
+  updateNinesViz();
+});
+
+function updateNinesViz() {
+  const val = document.getElementById('ninesSlider').value / 10;
+  const failures = Math.round(1000 * (1 - val / 100));
+  const blocks = document.querySelectorAll('#ninesViz .nines-block');
+  blocks.forEach((b, i) => {
+    b.className = 'nines-block ' + (i >= 1000 - failures ? 'down' : 'up');
+  });
+  document.getElementById('ninesExplain').innerHTML =
+    `With ${val.toFixed(1)}% availability, <strong>${failures} out of every 1,000 requests</strong> can fail.`;
+}
+
+// ═══ Cost Calculator ═══
+function calculateCost() {
+  const revenue = parseFloat(document.getElementById('costRevenue').value) || 0;
+  const current = parseFloat(document.getElementById('costCurrent').value) || 0;
+  const target = parseFloat(document.getElementById('costTarget').value) || 0;
+
+  const currentDowntimeHrs = (1 - current / 100) * 730;
+  const targetDowntimeHrs = (1 - target / 100) * 730;
+  const hourlyRevenue = revenue / 730;
+  const revenueSaved = (currentDowntimeHrs - targetDowntimeHrs) * hourlyRevenue;
+
+  const currentNines = -Math.log10(1 - current / 100);
+  const targetNines = -Math.log10(1 - target / 100);
+  const costMultiplier = Math.pow(10, targetNines - currentNines);
+  const estimatedCost = revenueSaved * costMultiplier * 0.5;
+
+  const result = document.getElementById('costResult');
+  result.style.display = 'block';
+  result.innerHTML = `
+    <p><strong>Revenue at risk from downtime:</strong></p>
+    <p>Current (${current}%): ~${currentDowntimeHrs.toFixed(1)} hours/month of downtime → $${(currentDowntimeHrs * hourlyRevenue).toFixed(0)} lost</p>
+    <p>Target (${target}%): ~${targetDowntimeHrs.toFixed(2)} hours/month of downtime → $${(targetDowntimeHrs * hourlyRevenue).toFixed(0)} lost</p>
+    <p><strong>Revenue saved by improving:</strong> ~$${revenueSaved.toFixed(0)}/month</p>
+    <p><strong>Estimated engineering cost multiplier:</strong> ~${costMultiplier.toFixed(1)}× (the jump from ${currentNines.toFixed(1)} to ${targetNines.toFixed(1)} nines)</p>
+    <p style="margin:0;color:var(--yellow);">⚠️ The cost grows exponentially. Is $${revenueSaved.toFixed(0)}/month worth the ${costMultiplier.toFixed(1)}× engineering investment?</p>
+  `;
+}
+
+// ═══ Error Budget Calculator ═══
+function calculateEB() {
+  const slo = parseFloat(document.getElementById('ebSlo').value) || 99.9;
+  const rpd = parseFloat(document.getElementById('ebRpd').value) || 1000000;
+  const window = parseFloat(document.getElementById('ebWindow').value) || 30;
+
+  const errorRate = 1 - slo / 100;
+  const totalRequests = rpd * window;
+  const budget = Math.round(totalRequests * errorRate);
+  const budgetPerDay = Math.round(rpd * errorRate);
+  const budgetMinutes = (errorRate * window * 24 * 60).toFixed(1);
+
+  const result = document.getElementById('ebResult');
+  result.style.display = 'block';
+  result.innerHTML = `
+    <div class="big">${budget.toLocaleString()} failed requests</div>
+    <p style="margin-top:12px;">Over ${window} days at ${rpd.toLocaleString()} req/day with a ${slo}% SLO:</p>
+    <p><strong>Total requests in window:</strong> ${totalRequests.toLocaleString()}</p>
+    <p><strong>Error budget:</strong> ${budget.toLocaleString()} failed requests (${budgetPerDay.toLocaleString()} per day)</p>
+    <p style="margin:0;"><strong>Equivalent time-based:</strong> ~${budgetMinutes} minutes of total downtime over ${window} days</p>
+  `;
+  updateScore(5);
+}
+
+// ═══ Quizzes ═══
+function answerQuiz(qId, el, isCorrect) {
+  if (answeredQuizzes.has(qId)) return;
+  answeredQuizzes.add(qId);
+
+  const options = el.parentElement.querySelectorAll('.quiz-option');
+  options.forEach(o => o.style.pointerEvents = 'none');
+
+  if (isCorrect) {
+    el.classList.add('correct');
+    updateScore(10);
+    quizzesCorrect++;
+  } else {
+    el.classList.add('incorrect');
+    // Highlight correct answer
+    options.forEach(o => {
+      if (o !== el && o.onclick.toString().includes('true')) {
+        o.classList.add('correct');
+      }
+    });
+  }
+
+  const fb = document.getElementById(qId + '-fb');
+  fb.className = 'quiz-feedback show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+  fb.innerHTML = isCorrect ? '✓ ' + quizFeedback[qId].correct : '✗ ' + quizFeedback[qId].incorrect;
+}
+
+// ═══ Tabs ═══
+function switchTab(tabEl, contentId) {
+  tabEl.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  const parent = tabEl.closest('.section');
+  parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  parent.querySelector('#' + contentId).classList.add('active');
+}
+
+// ═══ Task checklist ═══
+function toggleTask(el) {
+  el.classList.toggle('done');
+  el.textContent = el.classList.contains('done') ? '✓' : '';
+}
+
+// ═══ SLI Builder ═══
+function updateSLIBuilder() {
+  const type = document.getElementById('sliServiceType').value;
+  const cat = document.getElementById('sliCategory').value;
+  const good = document.getElementById('sliGood').value;
+  const total = document.getElementById('sliTotal').value;
+  const measure = document.getElementById('sliMeasure').value;
+  const target = document.getElementById('sliTarget').value;
+  const window = document.getElementById('sliWindow').value;
+
+  if (!type || !cat) {
+    document.getElementById('sliOutput').innerHTML = '<em style="color:var(--text-dim);">Fill in the fields above to generate your SLI/SLO specification...</em>';
+    return;
+  }
+
+  const measureLabels = { client: 'client-side instrumentation', lb: 'load balancer logs', server: 'application server metrics', synthetic: 'synthetic probes' };
+  const windowLabels = { '30d-rolling': '30-day rolling window', '7d-rolling': '7-day rolling window', 'quarterly': 'calendar quarter' };
+  const typeLabels = { api: 'REST API', web: 'Web Application', pipeline: 'Data Pipeline', storage: 'Storage Service', streaming: 'Event Streaming' };
+
+  let output = `<strong>═══ SLI/SLO Specification ═══</strong>\n\n`;
+  output += `<strong>Service Type:</strong> ${typeLabels[type] || type}\n`;
+  output += `<strong>SLI Category:</strong> ${cat.charAt(0).toUpperCase() + cat.slice(1)}\n\n`;
+  output += `<strong>SLI Specification:</strong>\n`;
+  output += `  The proportion of ${total || '[total events]'}\n`;
+  output += `  that are ${good || '[good events]'}\n\n`;
+  output += `<strong>SLO:</strong> ${target}% over a ${windowLabels[window]}\n`;
+  output += `<strong>Measurement:</strong> ${measureLabels[measure] || '[select measurement point]'}\n\n`;
+
+  const errorBudget = (1 - parseFloat(target) / 100) * 100;
+  output += `<strong>Error Budget:</strong> ${errorBudget.toFixed(3)}% of events may be "bad"`;
+
+  document.getElementById('sliOutput').innerHTML = output.replace(/\n/g, '<br>');
+}
+
+// ═══ Error Budget Game ═══
+const gameEvents = [
+  {
+    day: 2, title: "🚀 Feature Launch Request",
+    desc: "Product team wants to launch a new checkout flow. Expected impact: ~500 errors during canary rollout.",
+    choices: [
+      { text: "✅ Approve — we have plenty of budget", cost: 500, features: 1, feedback: "Good call. 500 errors is a small spend for a meaningful feature. Budget is healthy." },
+      { text: "⏳ Delay until more testing is done", cost: 0, features: 0, feedback: "Conservative choice. You saved budget but delayed the feature by a week." },
+    ]
+  },
+  {
+    day: 5, title: "⚠️ Database Migration",
+    desc: "DBA team needs a schema migration. Two options: rolling (slow, ~200 errors) or full cutover (fast, ~2,000 errors).",
+    choices: [
+      { text: "🐢 Rolling migration (200 errors)", cost: 200, features: 0, feedback: "Safe choice. Minimal budget impact at the cost of longer migration time." },
+      { text: "⚡ Full cutover (2,000 errors)", cost: 2000, features: 0, feedback: "Fast but expensive. That's 6.7% of your monthly budget on one migration." },
+    ]
+  },
+  {
+    day: 8, title: "🔥 Incident: Cache Failure",
+    desc: "Redis cluster lost a node. For 45 minutes, 30% of requests hit the database directly — 8,000 requests failed before recovery.",
+    choices: [
+      { text: "📝 Accept and write postmortem", cost: 8000, features: 0, feedback: "The right response. Document what happened, identify prevention measures, and track the budget impact." },
+    ]
+  },
+  {
+    day: 12, title: "🧪 A/B Test Request",
+    desc: "Data science wants to run an experiment on the recommendation engine. Expected: 1,000 errors from the treatment group.",
+    choices: [
+      { text: "✅ Approve the experiment", cost: 1000, features: 1, feedback: "Experiments are exactly what error budgets are for. Good spend." },
+      { text: "❌ Reject — budget is getting tight", cost: 0, features: 0, feedback: "You preserved budget, but the team can't learn from this experiment this quarter." },
+    ]
+  },
+  {
+    day: 16, title: "🚀 Major Feature: Real-time Notifications",
+    desc: "This is a high-value feature the CEO wants. Expected rollout impact: 3,000 errors. But if it succeeds, it's a big win.",
+    choices: [
+      { text: "✅ Ship it — this is strategic", cost: 3000, features: 2, feedback: "Bold move. Strategic features justify significant budget spend when they deliver real value." },
+      { text: "🔀 Phase it — ship to 10% first (500 errors)", cost: 500, features: 1, feedback: "Smart compromise. You validate with lower risk and can expand next sprint." },
+      { text: "❌ Not this quarter", cost: 0, features: 0, feedback: "The CEO won't be happy, but your budget is safe." },
+    ]
+  },
+  {
+    day: 20, title: "🔥 Incident: DNS Misconfiguration",
+    desc: "A config push broke DNS resolution for 2 hours. ~12,000 failed requests.",
+    choices: [
+      { text: "📝 Accept, postmortem, add guardrails", cost: 12000, features: 0, feedback: "Painful. That's 40% of your total budget. The postmortem better produce real improvements — automated config validation, staged rollouts for DNS changes." },
+    ]
+  },
+  {
+    day: 24, title: "🚀 Quick Win Feature",
+    desc: "A small UX improvement is ready. Very low risk: ~100 errors expected.",
+    choices: [
+      { text: "✅ Ship it", cost: 100, features: 1, feedback: "Easy win. Low cost, some value. Good use of remaining budget." },
+      { text: "❌ We're in budget preservation mode", cost: 0, features: 0, feedback: "If your budget is truly critical, this is defensible. But 100 errors is very small." },
+    ]
+  },
+  {
+    day: 28, title: "📊 End of Month Review",
+    desc: "Time to assess. How did you manage the budget?",
+    choices: [
+      { text: "📋 Complete review", cost: 0, features: 0, feedback: "Let's see how you did..." },
+    ]
+  },
+];
+
+let gameState = { day: 1, budgetUsed: 0, budgetTotal: 30000, features: 0, eventIdx: 0, started: false };
+
+function startGame() {
+  gameState = { day: 1, budgetUsed: 0, budgetTotal: 30000, features: 0, eventIdx: 0, started: true };
+  document.getElementById('gameStartBtn').style.display = 'none';
+  document.getElementById('gameResult').style.display = 'none';
+  document.getElementById('gameEvents').innerHTML = '';
+  updateGameUI();
+  showNextEvent();
+}
+
+function updateGameUI() {
+  const remaining = gameState.budgetTotal - gameState.budgetUsed;
+  const pct = (remaining / gameState.budgetTotal) * 100;
+
+  document.getElementById('gameDay').textContent = gameState.day;
+  document.getElementById('gameBudgetUsed').textContent = gameState.budgetUsed.toLocaleString();
+  document.getElementById('gameBudgetLeft').textContent = remaining.toLocaleString();
+  document.getElementById('gameFeatures').textContent = gameState.features;
+
+  const budgetEl = document.getElementById('gameBudgetLeft');
+  const dayEl = document.getElementById('gameDay');
+  budgetEl.className = 'value ' + (pct > 50 ? 'good' : pct > 20 ? 'warn' : 'bad');
+
+  const fill = document.getElementById('budgetBarFill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct > 50 ? 'var(--green)' : pct > 20 ? 'var(--yellow)' : 'var(--red)';
+  document.getElementById('budgetBarLabel').textContent = pct.toFixed(1) + '% remaining';
+
+  const status = document.getElementById('gameStatus');
+  if (remaining <= 0) {
+    status.textContent = 'FROZEN';
+    status.className = 'value bad';
+  } else if (pct < 20) {
+    status.textContent = 'Critical';
+    status.className = 'value bad';
+  } else if (pct < 50) {
+    status.textContent = 'Caution';
+    status.className = 'value warn';
+  } else {
+    status.textContent = 'Active';
+    status.className = 'value good';
+  }
+}
+
+function showNextEvent() {
+  if (gameState.eventIdx >= gameEvents.length) {
+    endGame();
+    return;
+  }
+
+  const evt = gameEvents[gameState.eventIdx];
+  gameState.day = evt.day;
+  updateGameUI();
+
+  const remaining = gameState.budgetTotal - gameState.budgetUsed;
+
+  let choicesHTML = '';
+  evt.choices.forEach((c, i) => {
+    const disabled = remaining <= 0 && c.cost > 0 && evt.choices.length > 1;
+    choicesHTML += `<div class="event-choice${disabled ? ' disabled' : ''}" onclick="makeChoice(${gameState.eventIdx}, ${i})" ${disabled ? 'style="opacity:0.4;pointer-events:none;"' : ''}>${c.text} <span style="color:var(--text-dim);font-size:12px;">(~${c.cost.toLocaleString()} errors)</span></div>`;
+  });
+
+  const cardHTML = `
+    <div class="event-card" id="event-${gameState.eventIdx}">
+      <h4>Day ${evt.day}: ${evt.title}</h4>
+      <p>${evt.desc}</p>
+      <div class="event-choices">${choicesHTML}</div>
+      <div class="event-outcome" id="outcome-${gameState.eventIdx}"></div>
+    </div>
+  `;
+
+  document.getElementById('gameEvents').insertAdjacentHTML('beforeend', cardHTML);
+  document.getElementById(`event-${gameState.eventIdx}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function makeChoice(eventIdx, choiceIdx) {
+  const evt = gameEvents[eventIdx];
+  const choice = evt.choices[choiceIdx];
+
+  // Disable all choices for this event
+  const card = document.getElementById(`event-${eventIdx}`);
+  card.querySelectorAll('.event-choice').forEach((c, i) => {
+    c.style.pointerEvents = 'none';
+    if (i === choiceIdx) c.classList.add('selected');
+    else c.style.opacity = '0.4';
+  });
+
+  gameState.budgetUsed += choice.cost;
+  gameState.features += choice.features;
+
+  const outcome = document.getElementById(`outcome-${eventIdx}`);
+  outcome.className = 'event-outcome show';
+  outcome.style.background = choice.cost > 5000 ? 'rgba(225,112,85,0.1)' : 'rgba(0,184,148,0.1)';
+  outcome.style.border = `1px solid ${choice.cost > 5000 ? 'rgba(225,112,85,0.3)' : 'rgba(0,184,148,0.3)'}`;
+  outcome.innerHTML = `<strong>${choice.cost > 0 ? '-' + choice.cost.toLocaleString() + ' from budget. ' : ''}${choice.features > 0 ? '+' + choice.features + ' feature(s) shipped. ' : ''}</strong>${choice.feedback}`;
+
+  updateGameUI();
+
+  gameState.eventIdx++;
+  setTimeout(() => showNextEvent(), 1200);
+}
+
+function endGame() {
+  const remaining = gameState.budgetTotal - gameState.budgetUsed;
+  const pct = (remaining / gameState.budgetTotal) * 100;
+  let grade, gradeColor, comment;
+
+  if (remaining < 0) {
+    grade = 'F'; gradeColor = 'var(--red)';
+    comment = "You blew the budget. In real life, this means a feature freeze and a very uncomfortable meeting. The incidents were unavoidable, but your feature decisions could have been more conservative.";
+  } else if (pct < 10) {
+    grade = 'C'; gradeColor = 'var(--yellow)';
+    comment = `You barely made it with ${pct.toFixed(1)}% remaining. You shipped ${gameState.features} features, but one more incident and you'd be in the red. Tighter decisions needed.`;
+  } else if (pct < 30) {
+    grade = 'B'; gradeColor = 'var(--blue)';
+    comment = `Solid management. ${pct.toFixed(1)}% budget remaining with ${gameState.features} features shipped. You balanced risk and innovation well.`;
+  } else if (gameState.features >= 3) {
+    grade = 'A'; gradeColor = 'var(--green)';
+    comment = `Excellent! ${pct.toFixed(1)}% remaining and ${gameState.features} features shipped. You used the budget wisely — not too conservative, not too aggressive.`;
+  } else {
+    grade = 'B-'; gradeColor = 'var(--yellow)';
+    comment = `You preserved ${pct.toFixed(1)}% of the budget, but only shipped ${gameState.features} features. Being too conservative with error budget means lost product velocity. Remember: unspent budget is wasted opportunity.`;
+  }
+
+  const gamePoints = grade === 'A' ? 25 : grade === 'B' ? 20 : grade === 'B-' ? 15 : grade === 'C' ? 10 : 5;
+  updateScore(gamePoints);
+
+  const result = document.getElementById('gameResult');
+  result.style.display = 'block';
+  result.innerHTML = `
+    <div class="concept-card" style="border-color:${gradeColor};box-shadow:0 0 20px ${gradeColor}33;">
+      <h4 style="font-size:20px;">Grade: <span style="color:${gradeColor};font-size:28px;">${grade}</span></h4>
+      <p><strong>Budget remaining:</strong> ${remaining.toLocaleString()} / 30,000 (${pct.toFixed(1)}%)</p>
+      <p><strong>Features shipped:</strong> ${gameState.features}</p>
+      <p style="margin:0;">${comment}</p>
+    </div>
+    <button class="btn btn-secondary" onclick="startGame()" style="margin-top:12px;">Play Again</button>
+  `;
+}
+
+// ═══ Nav click handlers ═══
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => goTo(item.getAttribute('data-section')));
+});
+
+// ═══ Final stats ═══
+function updateFinalStats() {
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('finalQuizzes').textContent = quizzesCorrect + '/12';
+  document.getElementById('finalSections').textContent = sectionsVisited.size + '/' + totalSections;
+}
+
+// ═══ Init ═══
+updateProgress();
+</script>
+
+</body>
+</html>
