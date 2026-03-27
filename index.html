@@ -1,9 +1,18 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SLO Mastery — Interactive Tutorial & Game</title>
+<script>
+  (function() {
+    var saved;
+    try { saved = localStorage.getItem('slo_theme'); } catch(e) {}
+    var theme = (saved === 'light' || saved === 'dark') ? saved
+      : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -572,7 +581,7 @@
   </div>
   <div class="score-display">
     Score: <b id="scoreDisplay">0</b>
-    <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">☀</button>
+    <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode" aria-label="Switch to dark mode" aria-pressed="false">☀</button>
   </div>
 </div>
 
@@ -2296,17 +2305,21 @@ function updateFinalStats() {
 (function() {
   const html = document.documentElement;
   const btn = document.getElementById('themeToggle');
-  const saved = localStorage.getItem('slo_theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = saved || (prefersDark ? 'dark' : 'light');
-  html.setAttribute('data-theme', theme);
-  btn.textContent = theme === 'dark' ? '☀' : '☾';
+  function lsGet(k) { try { return localStorage.getItem(k); } catch(e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
+  function applyTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    const isDark = theme === 'dark';
+    btn.textContent = isDark ? '☀' : '☾';
+    btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    btn.setAttribute('aria-pressed', String(isDark));
+  }
+  // theme already set in <head>; just sync button state
+  applyTheme(html.getAttribute('data-theme') || 'light');
   btn.addEventListener('click', function() {
-    const current = html.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    btn.textContent = next === 'dark' ? '☀' : '☾';
-    localStorage.setItem('slo_theme', next);
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    lsSet('slo_theme', next);
   });
 })();
 
