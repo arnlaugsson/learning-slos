@@ -428,6 +428,9 @@
     <div class="nav-item" data-section="sli-lab"><span class="check">○</span> SLI Builder Lab <span class="num">🔬</span></div>
     <div class="nav-item" data-section="completion"><span class="check">○</span> Graduation <span class="num">🎓</span></div>
   </div>
+  <div style="padding: 16px 20px; border-top: 1px solid var(--border); margin-top: 8px;">
+    <button onclick="clearProgress()" style="background:none; border:none; color:var(--text-dim); font-size:12px; cursor:pointer; padding:0; text-decoration:underline; text-underline-offset:3px;">Reset progress</button>
+  </div>
 </div>
 
 <!-- ═══ MAIN CONTENT ═══ -->
@@ -1636,6 +1639,32 @@ let score = 0;
 let quizzesCorrect = 0;
 let sectionsVisited = new Set(['welcome']);
 let answeredQuizzes = new Set();
+let quizAnswers = {}; // qId → {isCorrect, selectedIndex}
+
+// ═══ Persistence ═══
+const STORAGE_KEY = 'slo_mastery_progress';
+
+function saveState(currentSection) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    score,
+    quizzesCorrect,
+    sectionsVisited: [...sectionsVisited],
+    quizAnswers,
+    currentSection: currentSection || document.querySelector('.section.active')?.id || 'welcome'
+  }));
+}
+
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch(e) { return null; }
+}
+
+function clearProgress() {
+  if (!confirm('Reset all progress? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
 
 const sectionOrder = ['welcome','s1-1','s1-2','s1-3','s1-4','s1-quiz','s2-1','s2-2','s2-3','s2-4','s2-quiz','s3-1','s3-2','s3-3','s3-4','s3-quiz','game','sli-lab','completion'];
 const totalSections = sectionOrder.length;
@@ -1679,6 +1708,8 @@ function goTo(sectionId) {
 
   if (sectionId === 'completion') updateFinalStats();
   if (sectionId === 's1-2') initNinesViz();
+
+  saveState(sectionId);
 }
 
 function updateProgress() {
@@ -1778,22 +1809,30 @@ function answerQuiz(qId, el, isCorrect) {
   answeredQuizzes.add(qId);
 
   const options = el.parentElement.querySelectorAll('.quiz-option');
-  options.forEach(o => o.style.pointerEvents = 'none');
+  const selectedIndex = [...options].indexOf(el);
+  quizAnswers[qId] = { isCorrect, selectedIndex };
+
+  applyQuizVisual(qId, options, selectedIndex, isCorrect);
 
   if (isCorrect) {
-    el.classList.add('correct');
     updateScore(10);
     quizzesCorrect++;
-  } else {
-    el.classList.add('incorrect');
-    // Highlight correct answer
-    options.forEach(o => {
-      if (o !== el && o.onclick.toString().includes('true')) {
-        o.classList.add('correct');
-      }
-    });
   }
 
+  saveState();
+}
+
+function applyQuizVisual(qId, options, selectedIndex, isCorrect) {
+  options.forEach(o => o.style.pointerEvents = 'none');
+  const el = options[selectedIndex];
+  if (isCorrect) {
+    el.classList.add('correct');
+  } else {
+    el.classList.add('incorrect');
+    options.forEach(o => {
+      if (o !== el && o.onclick.toString().includes('true')) o.classList.add('correct');
+    });
+  }
   const fb = document.getElementById(qId + '-fb');
   fb.className = 'quiz-feedback show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
   fb.innerHTML = isCorrect ? '✓ ' + quizFeedback[qId].correct : '✗ ' + quizFeedback[qId].incorrect;
@@ -2067,8 +2106,53 @@ function updateFinalStats() {
   document.getElementById('finalSections').textContent = sectionsVisited.size + '/' + totalSections;
 }
 
-// ═══ Init ═══
-updateProgress();
+// ═══ Init: restore saved state ═══
+(function() {
+  const saved = loadState();
+  if (!saved) { updateProgress(); return; }
+
+  // Restore state variables
+  score = saved.score || 0;
+  quizzesCorrect = saved.quizzesCorrect || 0;
+  sectionsVisited = new Set(saved.sectionsVisited || ['welcome']);
+  quizAnswers = saved.quizAnswers || {};
+  Object.keys(quizAnswers).forEach(qId => answeredQuizzes.add(qId));
+
+  // Restore score display
+  document.getElementById('scoreDisplay').textContent = score;
+
+  // Restore nav completed marks
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const sec = n.getAttribute('data-section');
+    if (sectionsVisited.has(sec)) {
+      n.querySelector('.check').textContent = '✓';
+      n.classList.add('completed');
+    }
+  });
+
+  updateProgress();
+
+  // Restore quiz visual states (runs after DOM is fully ready)
+  Object.entries(quizAnswers).forEach(([qId, ans]) => {
+    const quizEl = document.getElementById(qId);
+    if (!quizEl) return;
+    const options = quizEl.querySelectorAll('.quiz-option');
+    if (options.length) applyQuizVisual(qId, options, ans.selectedIndex, ans.isCorrect);
+  });
+
+  // Navigate to last section
+  const target = saved.currentSection || 'welcome';
+  const targetEl = document.getElementById(target);
+  if (targetEl) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    targetEl.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navItem = document.querySelector(`.nav-item[data-section="${target}"]`);
+    if (navItem) navItem.classList.add('active');
+    if (target === 's1-2') initNinesViz();
+    if (target === 'completion') updateFinalStats();
+  }
+})();
 </script>
 
 </body>
