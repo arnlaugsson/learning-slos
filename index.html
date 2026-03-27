@@ -569,14 +569,30 @@
   <table class="nines-table">
     <thead><tr><th>Availability</th><th>Nines</th><th>Downtime / Year</th><th>Downtime / Quarter</th><th>Failed Req / Million</th></tr></thead>
     <tbody>
-      <tr><td class="nines">90%</td><td>One 9</td><td class="downtime">36.5 days</td><td class="downtime">9.1 days</td><td>100,000</td></tr>
-      <tr><td class="nines">99%</td><td>Two 9s</td><td class="downtime">3.65 days</td><td class="downtime">21.9 hours</td><td>10,000</td></tr>
-      <tr><td class="nines">99.9%</td><td>Three 9s</td><td class="downtime">8.76 hours</td><td class="downtime">2.19 hours</td><td>1,000</td></tr>
-      <tr><td class="nines">99.95%</td><td>Three and a half 9s</td><td class="downtime">4.38 hours</td><td class="downtime">1.09 hours</td><td>500</td></tr>
-      <tr><td class="nines">99.99%</td><td>Four 9s</td><td class="downtime">52.6 minutes</td><td class="downtime">13.1 minutes</td><td>100</td></tr>
-      <tr><td class="nines">99.999%</td><td>Five 9s</td><td class="downtime">5.26 minutes</td><td class="downtime">1.31 minutes</td><td>10</td></tr>
+      <tr data-meaning="Your service is down over a month a year. Only acceptable for batch jobs or non-critical internal tools — never for anything a user depends on."><td class="nines">90%</td><td>One 9</td><td class="downtime">36.5 days</td><td class="downtime">9.1 days</td><td>100,000</td></tr>
+      <tr data-meaning="Down 3–4 days a year. You'll have noticeable outages every quarter. Fine for internal dashboards or dev tooling, but users will notice and complain."><td class="nines">99%</td><td>Two 9s</td><td class="downtime">3.65 days</td><td class="downtime">21.9 hours</td><td>10,000</td></tr>
+      <tr data-meaning="Down ~9 hours a year — roughly one bad incident per quarter. The baseline for most customer-facing web services. Users tolerate this, but barely."><td class="nines">99.9%</td><td>Three 9s</td><td class="downtime">8.76 hours</td><td class="downtime">2.19 hours</td><td>1,000</td></tr>
+      <tr data-meaning="Down ~4 hours a year. A common target for SaaS products that take reliability seriously. Requires good on-call practices and fast incident response."><td class="nines">99.95%</td><td>Three and a half 9s</td><td class="downtime">4.38 hours</td><td class="downtime">1.09 hours</td><td>500</td></tr>
+      <tr data-meaning="Down ~52 minutes a year. Requires redundancy, automated failover, and a mature engineering culture. Appropriate for payment systems or anything with an SLA."><td class="nines">99.99%</td><td>Four 9s</td><td class="downtime">52.6 minutes</td><td class="downtime">13.1 minutes</td><td>100</td></tr>
+      <tr data-meaning="Down ~5 minutes a year. Extremely expensive to maintain. Reserved for critical infrastructure — telecom, emergency services, financial settlement systems."><td class="nines">99.999%</td><td>Five 9s</td><td class="downtime">5.26 minutes</td><td class="downtime">1.31 minutes</td><td>10</td></tr>
     </tbody>
   </table>
+  <div id="nines-context" style="display:none; margin-top:10px; padding:12px 16px; background:rgba(108,92,231,0.08); border-left:3px solid var(--accent); border-radius:4px; font-size:14px; color:var(--text-dim); min-height:44px;"></div>
+  <script>
+    (function() {
+      var rows = document.querySelectorAll('.nines-table tbody tr[data-meaning]');
+      var ctx = document.getElementById('nines-context');
+      rows.forEach(function(row) {
+        row.addEventListener('mouseenter', function() {
+          ctx.textContent = row.getAttribute('data-meaning');
+          ctx.style.display = 'block';
+        });
+        row.addEventListener('mouseleave', function() {
+          ctx.style.display = 'none';
+        });
+      });
+    })();
+  </script>
 
   <h2>Visualize it</h2>
   <p>Each block below represents one request out of 1,000. Use the slider to change the availability target and see how many failures (red blocks) are allowed:</p>
