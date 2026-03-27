@@ -1704,7 +1704,7 @@ function goTo(sectionId) {
     }
   });
 
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo(0, 0);
 
   if (sectionId === 'completion') updateFinalStats();
   if (sectionId === 's1-2') initNinesViz();
