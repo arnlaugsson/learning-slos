@@ -1835,18 +1835,54 @@ let quizzesCorrect = 0;
 let sectionsVisited = new Set(['welcome']);
 let answeredQuizzes = new Set();
 let quizAnswers = {}; // qId → {isCorrect, selectedIndex}
+let quizShuffleOrders = {}; // qId → shuffled index array
+
+// ═══ Quiz shuffling ═══
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function applyShuffleOrder(qId, order) {
+  const container = document.querySelector('#' + qId + ' .quiz-options');
+  if (!container) return;
+  const options = [...container.querySelectorAll('.quiz-option')];
+  if (options.length !== order.length) return;
+  order.forEach(i => container.appendChild(options[i]));
+  container.querySelectorAll('.quiz-option .letter').forEach((el, idx) => {
+    el.textContent = String.fromCharCode(65 + idx);
+  });
+}
+
+function initQuizShuffle(savedOrders) {
+  const orders = savedOrders || {};
+  Object.keys(quizFeedback).forEach(qId => {
+    if (!orders[qId]) {
+      const n = document.querySelectorAll('#' + qId + ' .quiz-option').length;
+      if (n > 0) orders[qId] = shuffleArray([...Array(n).keys()]);
+    }
+    if (orders[qId]) applyShuffleOrder(qId, orders[qId]);
+  });
+  return orders;
+}
 
 // ═══ Persistence ═══
 const STORAGE_KEY = 'slo_mastery_progress';
 
 function saveState(currentSection) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    score,
-    quizzesCorrect,
-    sectionsVisited: [...sectionsVisited],
-    quizAnswers,
-    currentSection: currentSection || document.querySelector('.section.active')?.id || 'welcome'
-  }));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      score,
+      quizzesCorrect,
+      sectionsVisited: [...sectionsVisited],
+      quizAnswers,
+      quizShuffleOrders,
+      currentSection: currentSection || document.querySelector('.section.active')?.id || 'welcome'
+    }));
+  } catch(e) {}
 }
 
 function loadState() {
@@ -2262,15 +2298,15 @@ function endGame() {
   } else if (pct < 10) {
     grade = 'C'; gradeColor = 'var(--yellow)';
     comment = `You barely made it with ${pct.toFixed(1)}% remaining. You shipped ${gameState.features} features, but one more incident and you'd be in the red. Tighter decisions needed.`;
-  } else if (pct < 30) {
-    grade = 'B'; gradeColor = 'var(--blue)';
-    comment = `Solid management. ${pct.toFixed(1)}% budget remaining with ${gameState.features} features shipped. You balanced risk and innovation well.`;
-  } else if (gameState.features >= 3) {
+  } else if (gameState.features >= 3 && pct >= 20) {
     grade = 'A'; gradeColor = 'var(--green)';
     comment = `Excellent! ${pct.toFixed(1)}% remaining and ${gameState.features} features shipped. You used the budget wisely — not too conservative, not too aggressive.`;
-  } else {
+  } else if (gameState.features < 3 && pct >= 30) {
     grade = 'B-'; gradeColor = 'var(--yellow)';
     comment = `You preserved ${pct.toFixed(1)}% of the budget, but only shipped ${gameState.features} features. Being too conservative with error budget means lost product velocity. Remember: unspent budget is wasted opportunity.`;
+  } else {
+    grade = 'B'; gradeColor = 'var(--blue)';
+    comment = `Solid management. ${pct.toFixed(1)}% budget remaining with ${gameState.features} features shipped. You balanced risk and innovation well.`;
   }
 
   const gamePoints = grade === 'A' ? 25 : grade === 'B' ? 20 : grade === 'B-' ? 15 : grade === 'C' ? 10 : 5;
@@ -2323,10 +2359,17 @@ function updateFinalStats() {
   });
 })();
 
-// ═══ Init: restore saved state ═══
+// ═══ Init: shuffle quizzes + restore saved state ═══
 (function() {
   const saved = loadState();
-  if (!saved) { updateProgress(); return; }
+
+  // Always shuffle (use saved order if exists, generate new if not)
+  quizShuffleOrders = initQuizShuffle(saved?.quizShuffleOrders);
+  if (!saved) {
+    saveState('welcome'); // persist initial shuffle orders
+    updateProgress();
+    return;
+  }
 
   // Restore state variables
   score = saved.score || 0;
@@ -2349,7 +2392,7 @@ function updateFinalStats() {
 
   updateProgress();
 
-  // Restore quiz visual states (runs after DOM is fully ready)
+  // Restore quiz visual states — shuffle already applied above, so selectedIndex is still valid
   Object.entries(quizAnswers).forEach(([qId, ans]) => {
     const quizEl = document.getElementById(qId);
     if (!quizEl) return;
