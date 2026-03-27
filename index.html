@@ -2295,9 +2295,9 @@ function endGame() {
   if (remaining < 0) {
     grade = 'F'; gradeColor = 'var(--red)';
     comment = "You blew the budget. In real life, this means a feature freeze and a very uncomfortable meeting. The incidents were unavoidable, but your feature decisions could have been more conservative.";
-  } else if (pct < 10) {
+  } else if (pct < 13) {
     grade = 'C'; gradeColor = 'var(--yellow)';
-    comment = `You barely made it with ${pct.toFixed(1)}% remaining. You shipped ${gameState.features} features, but one more incident and you'd be in the red. Tighter decisions needed.`;
+    comment = `Cutting it dangerously close — only ${pct.toFixed(1)}% remaining. You shipped ${gameState.features} features, but a third incident would have blown the budget entirely. Tighter decisions needed.`;
   } else if (gameState.features >= 3 && pct >= 20) {
     grade = 'A'; gradeColor = 'var(--green)';
     comment = `Excellent! ${pct.toFixed(1)}% remaining and ${gameState.features} features shipped. You used the budget wisely — not too conservative, not too aggressive.`;
