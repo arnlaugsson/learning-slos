@@ -362,14 +362,28 @@
     color: var(--accent); margin-bottom: 4px;
     font-weight: 800; letter-spacing: -0.01em;
   }
+  #game-hud {
+    position: sticky;
+    top: 52px;
+    z-index: 10;
+    background: var(--bg);
+    margin: 0 -64px;
+    padding: 16px 64px;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+  }
+  @media (max-width: 900px) {
+    #game-hud { margin: 0 -20px; padding: 12px 20px; }
+  }
+
   .game-stats {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px; margin: 20px 0;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px; margin: 0 0 10px 0;
   }
   .game-stat {
     background: var(--surface2);
     border: 1px solid var(--border);
-    padding: 14px; text-align: center;
+    padding: 10px 14px; text-align: center;
   }
   .game-stat .label {
     font-family: 'Work Sans', sans-serif;
@@ -377,16 +391,16 @@
   }
   .game-stat .value {
     font-family: 'Work Sans', sans-serif;
-    font-size: 26px; font-weight: 800; margin-top: 4px;
+    font-size: 22px; font-weight: 800; margin-top: 2px;
   }
   .game-stat .value.good { color: var(--green); }
   .game-stat .value.warn { color: var(--yellow); }
   .game-stat .value.bad { color: var(--red); }
 
   .budget-bar {
-    height: 20px; background: var(--surface2);
+    height: 16px; background: var(--surface2);
     border: 1px solid var(--border);
-    margin: 16px 0; overflow: hidden; position: relative;
+    margin: 0; overflow: hidden; position: relative;
   }
   .budget-bar-fill { height: 100%; transition: width 0.5s ease, background 0.5s ease; }
   .budget-bar-label {
@@ -1676,17 +1690,18 @@
     <h3>🎮 Error Budget Manager</h3>
     <p style="color:var(--text-dim);font-size:14px;margin-top:4px;">Your SLO is 99.9% over 30 days. You handle 1M requests/day. That gives you a budget of 30,000 failed requests for the month. Events will appear — make decisions wisely.</p>
 
-    <div class="game-stats">
-      <div class="game-stat"><div class="label">Day</div><div class="value good" id="gameDay">1</div></div>
-      <div class="game-stat"><div class="label">Budget Used</div><div class="value good" id="gameBudgetUsed">0</div></div>
-      <div class="game-stat"><div class="label">Budget Left</div><div class="value good" id="gameBudgetLeft">30,000</div></div>
-      <div class="game-stat"><div class="label">Features Shipped</div><div class="value" id="gameFeatures" style="color:var(--accent);">0</div></div>
-      <div class="game-stat"><div class="label">Status</div><div class="value good" id="gameStatus">Active</div></div>
-    </div>
-
-    <div class="budget-bar">
-      <div class="budget-bar-fill" id="budgetBarFill" style="width:100%;background:var(--green);"></div>
-      <div class="budget-bar-label" id="budgetBarLabel">100% remaining</div>
+    <div id="game-hud">
+      <div class="game-stats">
+        <div class="game-stat"><div class="label">Day</div><div class="value good" id="gameDay">1</div></div>
+        <div class="game-stat"><div class="label">Budget Used</div><div class="value good" id="gameBudgetUsed">0</div></div>
+        <div class="game-stat"><div class="label">Budget Left</div><div class="value good" id="gameBudgetLeft">30,000</div></div>
+        <div class="game-stat"><div class="label">Features Shipped</div><div class="value" id="gameFeatures" style="color:var(--accent);">0</div></div>
+        <div class="game-stat"><div class="label">Status</div><div class="value good" id="gameStatus">Active</div></div>
+      </div>
+      <div class="budget-bar">
+        <div class="budget-bar-fill" id="budgetBarFill" style="width:100%;background:var(--green);"></div>
+        <div class="budget-bar-label" id="budgetBarLabel">100% remaining</div>
+      </div>
     </div>
 
     <div id="gameEvents"></div>
