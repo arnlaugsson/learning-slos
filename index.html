@@ -349,88 +349,126 @@
   .quiz-feedback.correct-fb { background: var(--green-light); border-left: 4px solid var(--green); }
   .quiz-feedback.incorrect-fb { background: var(--red-light); border-left: 4px solid var(--red); }
 
-  /* ─── Game ─── */
-  .game-container {
-    background: var(--surface);
+  /* ─── Game Viewport ─── */
+  #game-viewport {
     border: 1px solid var(--border);
     border-top: 3px solid var(--accent);
-    padding: 32px; margin: 28px 0;
-    box-shadow: var(--shadow-md);
-  }
-  .game-container h3 {
-    font-family: 'Work Sans', sans-serif;
-    color: var(--accent); margin-bottom: 4px;
-    font-weight: 800; letter-spacing: -0.01em;
+    margin: 28px 0;
+    overflow: hidden;
+    background: var(--surface);
   }
   #game-hud {
-    position: sticky;
-    top: 52px;
-    z-index: 10;
-    background: var(--bg);
-    margin: 0 -64px;
-    padding: 16px 64px;
+    background: var(--surface);
     border-bottom: 1px solid var(--border);
+    padding: 14px 24px 12px;
   }
-  @media (max-width: 900px) {
-    #game-hud { margin: 0 -20px; padding: 12px 20px; }
-  }
-
   .game-stats {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    display: grid; grid-template-columns: repeat(5, 1fr);
     gap: 8px; margin: 0 0 10px 0;
   }
   .game-stat {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 10px 14px; text-align: center;
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 8px 10px; text-align: center;
   }
   .game-stat .label {
     font-family: 'Work Sans', sans-serif;
-    font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);
   }
   .game-stat .value {
     font-family: 'Work Sans', sans-serif;
-    font-size: 22px; font-weight: 800; margin-top: 2px;
+    font-size: 20px; font-weight: 800; margin-top: 2px;
   }
   .game-stat .value.good { color: var(--green); }
   .game-stat .value.warn { color: var(--yellow); }
   .game-stat .value.bad { color: var(--red); }
-
   .budget-bar {
-    height: 16px; background: var(--surface2);
+    height: 14px; background: var(--surface2);
     border: 1px solid var(--border);
     margin: 0; overflow: hidden; position: relative;
   }
   .budget-bar-fill { height: 100%; transition: width 0.5s ease, background 0.5s ease; }
   .budget-bar-label {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
     color: var(--text); mix-blend-mode: difference;
+  }
+
+  /* Intro screen */
+  #game-intro {
+    min-height: 420px; display: flex;
+    align-items: center; justify-content: center;
+    padding: 48px 40px;
+  }
+  .game-intro-inner { max-width: 500px; text-align: center; }
+  .game-intro-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em; color: var(--accent);
+    border: 1px solid var(--accent); display: inline-block;
+    padding: 3px 12px; margin-bottom: 20px;
+  }
+  .game-intro-inner h2 {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 26px; font-weight: 800; margin-bottom: 14px;
+  }
+  .game-intro-inner > p {
+    color: var(--text-dim); font-size: 14.5px; line-height: 1.6; margin-bottom: 22px;
+  }
+  .game-rules {
+    display: flex; flex-direction: column; gap: 10px; text-align: left;
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 16px 20px; margin-bottom: 28px;
+  }
+  .game-rule { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; color: var(--text-dim); }
+  .rule-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* Game stage — one event at a time */
+  #game-stage {
+    min-height: 420px; display: flex;
+    align-items: center; justify-content: center;
+    padding: 32px 40px;
+  }
+  #game-event-area { width: 100%; max-width: 580px; }
+
+  @keyframes eventFlyIn {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes eventFlyOut {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-20px); }
   }
 
   .event-card {
     background: var(--surface2); border: 1px solid var(--border);
-    padding: 20px; margin: 16px 0;
+    padding: 24px; animation: eventFlyIn 0.35s ease;
   }
+  .event-card.flying-out { animation: eventFlyOut 0.25s ease forwards; }
   .event-card h4 {
-    font-family: 'Work Sans', sans-serif;
-    font-weight: 700; margin-bottom: 8px;
+    font-family: 'Work Sans', sans-serif; font-weight: 700;
+    font-size: 17px; margin-bottom: 8px;
   }
-  .event-card p { font-size: 14.5px; color: var(--text-dim); margin-bottom: 14px; }
+  .event-card > p { font-size: 14.5px; color: var(--text-dim); margin-bottom: 16px; }
+  .incident-warning {
+    background: rgba(225,112,85,0.08); border-left: 3px solid var(--red);
+    padding: 7px 12px; font-size: 12.5px; color: var(--red);
+    font-family: 'JetBrains Mono', monospace; margin-bottom: 14px;
+  }
   .event-choices { display: flex; flex-direction: column; gap: 8px; }
   .event-choice {
     background: var(--surface); border: 1px solid var(--border);
-    padding: 11px 16px; cursor: pointer; transition: all 0.15s; font-size: 14px;
+    padding: 12px 16px; cursor: pointer; transition: all 0.15s; font-size: 14px;
   }
   .event-choice:hover { border-color: var(--accent); background: var(--accent-light); }
   .event-choice.selected { border-left: 4px solid var(--green); background: var(--green-light); pointer-events: none; }
+  .event-choice.skip-choice { border-style: dashed; }
+  .event-choice.skip-choice:hover { border-color: var(--yellow); background: rgba(253,203,110,0.08); border-style: dashed; }
   .event-outcome {
-    margin-top: 12px; padding: 12px 16px;
+    margin-top: 14px; padding: 12px 16px;
     font-size: 14px; display: none; line-height: 1.65;
     border-left: 3px solid var(--border); font-style: italic;
   }
   .event-outcome.show { display: block; animation: fadeIn 0.3s ease; }
+  #gameResult { padding: 32px 40px; border-top: 1px solid var(--border); }
 
   /* ─── Buttons ─── */
   .btn {
@@ -1685,31 +1723,46 @@
   <h1><span class="chapter-num">Final Challenge</span>Error Budget Simulator</h1>
   <p class="subtitle">You're the SRE lead. Manage your team's error budget over a 30-day window.</p>
 
-  <div class="game-container">
-    <h3>🎮 Error Budget Manager</h3>
-    <p style="color:var(--text-dim);font-size:14px;margin-top:4px;">Your SLO is 99.9% over 30 days. You handle 1M requests/day. That gives you a budget of 30,000 failed requests for the month. Events will appear — make decisions wisely.</p>
+  <div id="game-viewport">
 
+    <!-- HUD — always visible, never scrolls away -->
     <div id="game-hud">
       <div class="game-stats">
-        <div class="game-stat"><div class="label">Day</div><div class="value good" id="gameDay">1</div></div>
-        <div class="game-stat"><div class="label">Budget Used</div><div class="value good" id="gameBudgetUsed">0</div></div>
+        <div class="game-stat"><div class="label">Day</div><div class="value" id="gameDay">—</div></div>
+        <div class="game-stat"><div class="label">Budget Used</div><div class="value" id="gameBudgetUsed">—</div></div>
         <div class="game-stat"><div class="label">Budget Left</div><div class="value good" id="gameBudgetLeft">30,000</div></div>
-        <div class="game-stat"><div class="label">Features Shipped</div><div class="value" id="gameFeatures" style="color:var(--accent);">0</div></div>
-        <div class="game-stat"><div class="label">Status</div><div class="value good" id="gameStatus">Active</div></div>
+        <div class="game-stat"><div class="label">Features</div><div class="value" id="gameFeatures" style="color:var(--accent);">—</div></div>
+        <div class="game-stat"><div class="label">Status</div><div class="value" id="gameStatus">—</div></div>
       </div>
       <div class="budget-bar">
         <div class="budget-bar-fill" id="budgetBarFill" style="width:100%;background:var(--green);"></div>
-        <div class="budget-bar-label" id="budgetBarLabel">100% remaining</div>
+        <div class="budget-bar-label" id="budgetBarLabel">30-day window</div>
       </div>
     </div>
 
-    <div id="gameEvents"></div>
-
-    <div id="gameControls" style="margin-top:16px;">
-      <button class="btn btn-primary" id="gameStartBtn" onclick="startGame()">Start Simulation</button>
+    <!-- Intro screen -->
+    <div id="game-intro">
+      <div class="game-intro-inner">
+        <div class="game-intro-badge">SRE SIMULATION</div>
+        <h2>Error Budget Manager</h2>
+        <p>You are the SRE lead at an e-commerce company. Your SLO is <strong>99.9%</strong> availability over 30 days. With 1M requests/day, that gives you <strong>30,000 failed requests</strong> as your monthly budget.</p>
+        <div class="game-rules">
+          <div class="game-rule"><span class="rule-icon">🚀</span><span>Approve features to ship value — but each launch costs error budget</span></div>
+          <div class="game-rule"><span class="rule-icon">🔥</span><span>Incidents happen. Write postmortems to prevent costs from compounding</span></div>
+          <div class="game-rule"><span class="rule-icon">📊</span><span>Balance velocity and reliability — unspent budget is wasted opportunity</span></div>
+        </div>
+        <button class="btn btn-primary" onclick="startGame()" style="font-size:15px;padding:13px 36px;">Start Simulation →</button>
+      </div>
     </div>
 
-    <div id="gameResult" style="display:none;margin-top:20px;"></div>
+    <!-- Game stage — one event at a time, no scrolling -->
+    <div id="game-stage" style="display:none;">
+      <div id="game-event-area"></div>
+    </div>
+
+    <!-- Result -->
+    <div id="gameResult" style="display:none;"></div>
+
   </div>
 
   <div class="section-nav">
@@ -2138,73 +2191,105 @@ const gameEvents = [
     day: 2, title: "🚀 Feature Launch Request",
     desc: "Product team wants to launch a new checkout flow. Expected impact: ~500 errors during canary rollout.",
     choices: [
-      { text: "✅ Approve — we have plenty of budget", cost: 500, features: 1, feedback: "Good call. 500 errors is a small spend for a meaningful feature. Budget is healthy." },
-      { text: "⏳ Delay until more testing is done", cost: 0, features: 0, feedback: "Conservative choice. You saved budget but delayed the feature by a week." },
+      { text: "✅ Approve", cost: 500, features: 1, feedback: "Good call. 500 errors is a small spend for a meaningful feature. Budget is healthy." },
+      { text: "⏳ Delay — more testing first", cost: 0, features: 0, feedback: "Conservative. Budget preserved, but the feature is delayed a week." },
     ]
   },
   {
     day: 5, title: "⚠️ Database Migration",
-    desc: "DBA team needs a schema migration. Two options: rolling (slow, ~200 errors) or full cutover (fast, ~2,000 errors).",
+    desc: "DBA team needs a schema migration. Two options: rolling (slow, safer) or full cutover (fast, riskier).",
     choices: [
-      { text: "🐢 Rolling migration (200 errors)", cost: 200, features: 0, feedback: "Safe choice. Minimal budget impact at the cost of longer migration time." },
-      { text: "⚡ Full cutover (2,000 errors)", cost: 2000, features: 0, feedback: "Fast but expensive. That's 6.7% of your monthly budget on one migration." },
+      { text: "🐢 Rolling migration (~200 errors)", cost: 200, features: 0, feedback: "Safe choice. Minimal budget impact." },
+      { text: "⚡ Full cutover (~2,000 errors)", cost: 2000, features: 0, feedback: "Fast but expensive — 6.7% of your monthly budget on one migration." },
     ]
   },
   {
-    day: 8, title: "🔥 Incident: Cache Failure",
-    desc: "Redis cluster lost a node. For 45 minutes, 30% of requests hit the database directly — 8,000 requests failed before recovery.",
+    day: 8, title: "🔥 Incident: Cache Failure", incident: true,
+    desc: "Redis cluster lost a node. 30% of requests hit the database directly for 45 minutes — 8,000 requests failed. Unavoidable, but how you respond matters.",
     choices: [
-      { text: "📝 Accept and write postmortem", cost: 8000, features: 0, feedback: "The right response. Document what happened, identify prevention measures, and track the budget impact." },
+      {
+        text: "📝 Write postmortem",
+        postmortem: true,
+        costFn: s => Math.round(s.incidentMultiplier * 8000),
+        features: 0,
+        feedbackFn: s => `Root cause documented. Redis monitoring added. ${s.incidentMultiplier > 1 ? `⚠ Cost was +${Math.round((s.incidentMultiplier - 1) * 100)}% because a previous incident had no postmortem — the pattern went undetected.` : "Pattern logged. Future incidents won't compound."}`
+      },
+      {
+        text: "⏭️ Skip postmortem — too busy right now",
+        postmortem: false,
+        costFn: s => Math.round(s.incidentMultiplier * 8000 * 0.8),
+        features: 0,
+        feedbackFn: s => `Saved ${Math.round(s.incidentMultiplier * 8000 * 0.2).toLocaleString()} errors now. Root cause undocumented — next incident will cost 30% more.`
+      },
     ]
   },
   {
     day: 12, title: "🧪 A/B Test Request",
-    desc: "Data science wants to run an experiment on the recommendation engine. Expected: 1,000 errors from the treatment group.",
+    desc: "Data science wants to experiment on the recommendation engine. Expected: 1,000 errors from the treatment group.",
     choices: [
       { text: "✅ Approve the experiment", cost: 1000, features: 1, feedback: "Experiments are exactly what error budgets are for. Good spend." },
-      { text: "❌ Reject — budget is getting tight", cost: 0, features: 0, feedback: "You preserved budget, but the team can't learn from this experiment this quarter." },
+      { text: "❌ Reject — budget is tight", cost: 0, features: 0, feedback: "Budget preserved. The team loses a learning opportunity this quarter." },
     ]
   },
   {
-    day: 16, title: "🚀 Major Feature: Real-time Notifications",
-    desc: "This is a high-value feature the CEO wants. Expected rollout impact: 3,000 errors. But if it succeeds, it's a big win.",
+    day: 16, title: "🚀 Real-time Notifications",
+    desc: "A high-value feature the CEO wants. Expected rollout impact: 3,000 errors. Big win if it lands.",
     choices: [
-      { text: "✅ Ship it — this is strategic", cost: 3000, features: 2, feedback: "Bold move. Strategic features justify significant budget spend when they deliver real value." },
-      { text: "🔀 Phase it — ship to 10% first (500 errors)", cost: 500, features: 1, feedback: "Smart compromise. You validate with lower risk and can expand next sprint." },
-      { text: "❌ Not this quarter", cost: 0, features: 0, feedback: "The CEO won't be happy, but your budget is safe." },
+      { text: "✅ Ship it — strategic priority", cost: 3000, features: 2, feedback: "Bold. Strategic features justify significant budget when they deliver real value." },
+      { text: "🔀 Phase it — 10% rollout first (~500 errors)", cost: 500, features: 1, feedback: "Smart compromise. Validate at lower risk, expand next sprint." },
+      { text: "❌ Not this quarter", cost: 0, features: 0, feedback: "Budget safe. The CEO won't be happy." },
     ]
   },
   {
-    day: 20, title: "🔥 Incident: DNS Misconfiguration",
-    desc: "A config push broke DNS resolution for 2 hours. ~12,000 failed requests.",
+    day: 20, title: "🔥 Incident: DNS Misconfiguration", incident: true,
+    desc: "A config push broke DNS resolution for 2 hours — ~12,000 failed requests. Your response to the last incident shapes what this costs.",
     choices: [
-      { text: "📝 Accept, postmortem, add guardrails", cost: 12000, features: 0, feedback: "Painful. That's 40% of your total budget. The postmortem better produce real improvements — automated config validation, staged rollouts for DNS changes." },
+      {
+        text: "📝 Write postmortem",
+        postmortem: true,
+        costFn: s => Math.round(s.incidentMultiplier * 12000),
+        features: 0,
+        feedbackFn: s => s.incidentMultiplier > 1
+          ? `⚠ Cost compounded +${Math.round((s.incidentMultiplier - 1) * 100)}% — skipping the last postmortem meant you missed the config deployment patterns that led here.`
+          : "Added automated config validation and staged rollouts for DNS changes."
+      },
+      {
+        text: "⏭️ Skip postmortem — we'll deal with it later",
+        postmortem: false,
+        costFn: s => Math.round(s.incidentMultiplier * 12000 * 0.8),
+        features: 0,
+        feedbackFn: s => `Saved ${Math.round(s.incidentMultiplier * 12000 * 0.2).toLocaleString()} errors now. Root cause unknown. If there's a third incident, you'll have no institutional memory to draw on.`
+      },
     ]
   },
   {
     day: 24, title: "🚀 Quick Win Feature",
-    desc: "A small UX improvement is ready. Very low risk: ~100 errors expected.",
+    desc: "A small UX improvement ready to ship. Very low risk: ~100 errors expected.",
     choices: [
-      { text: "✅ Ship it", cost: 100, features: 1, feedback: "Easy win. Low cost, some value. Good use of remaining budget." },
-      { text: "❌ We're in budget preservation mode", cost: 0, features: 0, feedback: "If your budget is truly critical, this is defensible. But 100 errors is very small." },
+      { text: "✅ Ship it (~100 errors)", cost: 100, features: 1, feedback: "Easy win. Low cost, real value." },
+      { text: "❌ Budget preservation mode", cost: 0, features: 0, feedback: "100 errors is very small. But if your budget is critical, defensible." },
     ]
   },
   {
     day: 28, title: "📊 End of Month Review",
-    desc: "Time to assess. How did you manage the budget?",
+    desc: "Time to assess. How did you balance velocity and reliability over the month?",
     choices: [
-      { text: "📋 Complete review", cost: 0, features: 0, feedback: "Let's see how you did..." },
+      { text: "📋 See my results", cost: 0, features: 0, feedback: "Let's see how you did..." },
     ]
   },
 ];
 
-let gameState = { day: 1, budgetUsed: 0, budgetTotal: 30000, features: 0, eventIdx: 0, started: false };
+let gameState = { day: 1, budgetUsed: 0, budgetTotal: 30000, features: 0, eventIdx: 0, started: false, incidentMultiplier: 1.0, skippedPostmortems: 0 };
+
+function getChoiceCost(choice) {
+  return choice.costFn ? choice.costFn(gameState) : (choice.cost || 0);
+}
 
 function startGame() {
-  gameState = { day: 1, budgetUsed: 0, budgetTotal: 30000, features: 0, eventIdx: 0, started: true };
-  document.getElementById('gameStartBtn').style.display = 'none';
+  gameState = { day: 1, budgetUsed: 0, budgetTotal: 30000, features: 0, eventIdx: 0, started: true, incidentMultiplier: 1.0, skippedPostmortems: 0 };
+  document.getElementById('game-intro').style.display = 'none';
+  document.getElementById('game-stage').style.display = 'flex';
   document.getElementById('gameResult').style.display = 'none';
-  document.getElementById('gameEvents').innerHTML = '';
   updateGameUI();
   showNextEvent();
 }
@@ -2213,72 +2298,61 @@ function updateGameUI() {
   const remaining = gameState.budgetTotal - gameState.budgetUsed;
   const pct = (remaining / gameState.budgetTotal) * 100;
 
-  document.getElementById('gameDay').textContent = gameState.day;
-  document.getElementById('gameBudgetUsed').textContent = gameState.budgetUsed.toLocaleString();
-  document.getElementById('gameBudgetLeft').textContent = remaining.toLocaleString();
-  document.getElementById('gameFeatures').textContent = gameState.features;
+  document.getElementById('gameDay').textContent = gameState.started ? gameState.day : '—';
+  document.getElementById('gameBudgetUsed').textContent = gameState.started ? gameState.budgetUsed.toLocaleString() : '—';
+  document.getElementById('gameBudgetLeft').textContent = gameState.started ? remaining.toLocaleString() : '30,000';
+  document.getElementById('gameFeatures').textContent = gameState.started ? gameState.features : '—';
 
-  const budgetEl = document.getElementById('gameBudgetLeft');
-  const dayEl = document.getElementById('gameDay');
-  budgetEl.className = 'value ' + (pct > 50 ? 'good' : pct > 20 ? 'warn' : 'bad');
+  document.getElementById('gameBudgetLeft').className = 'value ' + (pct > 50 ? 'good' : pct > 20 ? 'warn' : 'bad');
 
   const fill = document.getElementById('budgetBarFill');
-  fill.style.width = pct + '%';
+  fill.style.width = (gameState.started ? pct : 100) + '%';
   fill.style.background = pct > 50 ? 'var(--green)' : pct > 20 ? 'var(--yellow)' : 'var(--red)';
-  document.getElementById('budgetBarLabel').textContent = pct.toFixed(1) + '% remaining';
+  document.getElementById('budgetBarLabel').textContent = gameState.started ? pct.toFixed(1) + '% remaining' : '30-day window';
 
   const status = document.getElementById('gameStatus');
-  if (remaining <= 0) {
-    status.textContent = 'FROZEN';
-    status.className = 'value bad';
-  } else if (pct < 20) {
-    status.textContent = 'Critical';
-    status.className = 'value bad';
-  } else if (pct < 50) {
-    status.textContent = 'Caution';
-    status.className = 'value warn';
-  } else {
-    status.textContent = 'Active';
-    status.className = 'value good';
-  }
+  if (!gameState.started) { status.textContent = '—'; status.className = 'value'; return; }
+  if (remaining <= 0) { status.textContent = 'FROZEN'; status.className = 'value bad'; }
+  else if (pct < 20) { status.textContent = 'Critical'; status.className = 'value bad'; }
+  else if (pct < 50) { status.textContent = 'Caution'; status.className = 'value warn'; }
+  else { status.textContent = 'Active'; status.className = 'value good'; }
 }
 
 function showNextEvent() {
-  if (gameState.eventIdx >= gameEvents.length) {
-    endGame();
-    return;
-  }
+  if (gameState.eventIdx >= gameEvents.length) { endGame(); return; }
 
   const evt = gameEvents[gameState.eventIdx];
   gameState.day = evt.day;
   updateGameUI();
 
   const remaining = gameState.budgetTotal - gameState.budgetUsed;
-
   let choicesHTML = '';
   evt.choices.forEach((c, i) => {
-    const disabled = remaining <= 0 && c.cost > 0 && evt.choices.length > 1;
-    choicesHTML += `<div class="event-choice${disabled ? ' disabled' : ''}" onclick="makeChoice(${gameState.eventIdx}, ${i})" ${disabled ? 'style="opacity:0.4;pointer-events:none;"' : ''}>${c.text} <span style="color:var(--text-dim);font-size:12px;">(~${c.cost.toLocaleString()} errors)</span></div>`;
+    const cost = getChoiceCost(c);
+    const disabled = remaining <= 0 && cost > 0 && evt.choices.length > 1;
+    const isSkip = c.postmortem === false;
+    choicesHTML += `<div class="event-choice${disabled ? ' disabled' : ''}${isSkip ? ' skip-choice' : ''}" onclick="makeChoice(${gameState.eventIdx},${i})" ${disabled ? 'style="opacity:0.4;pointer-events:none;"' : ''}>${c.text}<span style="color:var(--text-dim);font-size:12px;margin-left:8px;">(~${cost.toLocaleString()} errors)</span></div>`;
   });
 
-  const cardHTML = `
+  const compoundWarning = evt.incident && gameState.incidentMultiplier > 1
+    ? `<div class="incident-warning">⚠ +${Math.round((gameState.incidentMultiplier - 1) * 100)}% compound cost active — previous incident had no postmortem</div>`
+    : '';
+
+  document.getElementById('game-event-area').innerHTML = `
     <div class="event-card" id="event-${gameState.eventIdx}">
       <h4>Day ${evt.day}: ${evt.title}</h4>
+      ${compoundWarning}
       <p>${evt.desc}</p>
       <div class="event-choices">${choicesHTML}</div>
       <div class="event-outcome" id="outcome-${gameState.eventIdx}"></div>
-    </div>
-  `;
-
-  document.getElementById('gameEvents').insertAdjacentHTML('beforeend', cardHTML);
-  document.getElementById(`event-${gameState.eventIdx}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    </div>`;
 }
 
 function makeChoice(eventIdx, choiceIdx) {
   const evt = gameEvents[eventIdx];
   const choice = evt.choices[choiceIdx];
+  const cost = getChoiceCost(choice);
 
-  // Disable all choices for this event
   const card = document.getElementById(`event-${eventIdx}`);
   card.querySelectorAll('.event-choice').forEach((c, i) => {
     c.style.pointerEvents = 'none';
@@ -2286,41 +2360,56 @@ function makeChoice(eventIdx, choiceIdx) {
     else c.style.opacity = '0.4';
   });
 
-  gameState.budgetUsed += choice.cost;
-  gameState.features += choice.features;
+  // Capture feedback before mutating state
+  const feedbackText = choice.feedbackFn ? choice.feedbackFn(gameState) : choice.feedback;
+
+  // Apply postmortem mechanic
+  if (choice.postmortem === false) { gameState.incidentMultiplier *= 1.3; gameState.skippedPostmortems++; }
+  else if (choice.postmortem === true) { gameState.incidentMultiplier = 1.0; }
+
+  gameState.budgetUsed += cost;
+  gameState.features += choice.features || 0;
 
   const outcome = document.getElementById(`outcome-${eventIdx}`);
   outcome.className = 'event-outcome show';
-  outcome.style.background = choice.cost > 5000 ? 'rgba(225,112,85,0.1)' : 'rgba(0,184,148,0.1)';
-  outcome.style.border = `1px solid ${choice.cost > 5000 ? 'rgba(225,112,85,0.3)' : 'rgba(0,184,148,0.3)'}`;
-  outcome.innerHTML = `<strong>${choice.cost > 0 ? '-' + choice.cost.toLocaleString() + ' from budget. ' : ''}${choice.features > 0 ? '+' + choice.features + ' feature(s) shipped. ' : ''}</strong>${choice.feedback}`;
+  outcome.style.background = cost > 5000 ? 'rgba(225,112,85,0.1)' : 'rgba(0,184,148,0.1)';
+  outcome.style.borderLeft = `3px solid ${cost > 5000 ? 'var(--red)' : 'var(--green)'}`;
+  outcome.innerHTML = `<strong>${cost > 0 ? '−' + cost.toLocaleString() + ' errors. ' : ''}${(choice.features || 0) > 0 ? '+' + choice.features + ' feature(s). ' : ''}</strong>${feedbackText}`;
 
   updateGameUI();
-
   gameState.eventIdx++;
-  setTimeout(() => showNextEvent(), 1200);
+
+  setTimeout(() => {
+    card.classList.add('flying-out');
+    setTimeout(() => showNextEvent(), 260);
+  }, 1600);
 }
 
 function endGame() {
+  document.getElementById('game-stage').style.display = 'none';
   const remaining = gameState.budgetTotal - gameState.budgetUsed;
   const pct = (remaining / gameState.budgetTotal) * 100;
   let grade, gradeColor, comment;
 
+  const pmNote = gameState.skippedPostmortems > 0
+    ? ` You skipped ${gameState.skippedPostmortems} postmortem${gameState.skippedPostmortems > 1 ? 's' : ''} — incident costs compounded as a result.`
+    : ' All incidents had postmortems — no compounding.';
+
   if (remaining < 0) {
     grade = 'F'; gradeColor = 'var(--red)';
-    comment = "You blew the budget. In real life, this means a feature freeze and a very uncomfortable meeting. The incidents were unavoidable, but your feature decisions could have been more conservative.";
+    comment = `Budget exhausted. In real life: feature freeze and a very uncomfortable all-hands.${pmNote}`;
   } else if (pct < 13) {
     grade = 'C'; gradeColor = 'var(--yellow)';
-    comment = `Cutting it dangerously close — only ${pct.toFixed(1)}% remaining. You shipped ${gameState.features} features, but a third incident would have blown the budget entirely. Tighter decisions needed.`;
+    comment = `Only ${pct.toFixed(1)}% remaining — dangerously close. A third incident would have blown the budget.${pmNote}`;
   } else if (gameState.features >= 3 && pct >= 20) {
     grade = 'A'; gradeColor = 'var(--green)';
-    comment = `Excellent! ${pct.toFixed(1)}% remaining and ${gameState.features} features shipped. You used the budget wisely — not too conservative, not too aggressive.`;
+    comment = `${pct.toFixed(1)}% remaining and ${gameState.features} features shipped. Budget used wisely.${pmNote}`;
   } else if (gameState.features < 3 && pct >= 30) {
     grade = 'B-'; gradeColor = 'var(--yellow)';
-    comment = `You preserved ${pct.toFixed(1)}% of the budget, but only shipped ${gameState.features} features. Being too conservative with error budget means lost product velocity. Remember: unspent budget is wasted opportunity.`;
+    comment = `${pct.toFixed(1)}% preserved but only ${gameState.features} features shipped. Too conservative — unspent budget is wasted opportunity.${pmNote}`;
   } else {
     grade = 'B'; gradeColor = 'var(--blue)';
-    comment = `Solid management. ${pct.toFixed(1)}% budget remaining with ${gameState.features} features shipped. You balanced risk and innovation well.`;
+    comment = `Solid. ${pct.toFixed(1)}% remaining with ${gameState.features} features shipped.${pmNote}`;
   }
 
   const gamePoints = grade === 'A' ? 25 : grade === 'B' ? 20 : grade === 'B-' ? 15 : grade === 'C' ? 10 : 5;
@@ -2329,14 +2418,22 @@ function endGame() {
   const result = document.getElementById('gameResult');
   result.style.display = 'block';
   result.innerHTML = `
-    <div class="concept-card" style="border-color:${gradeColor};box-shadow:0 0 20px ${gradeColor}33;">
+    <div class="concept-card" style="border-color:${gradeColor};box-shadow:0 0 20px ${gradeColor}33;margin:0;">
       <h4 style="font-size:20px;">Grade: <span style="color:${gradeColor};font-size:28px;">${grade}</span></h4>
       <p><strong>Budget remaining:</strong> ${remaining.toLocaleString()} / 30,000 (${pct.toFixed(1)}%)</p>
       <p><strong>Features shipped:</strong> ${gameState.features}</p>
       <p style="margin:0;">${comment}</p>
     </div>
-    <button class="btn btn-secondary" onclick="startGame()" style="margin-top:12px;">Play Again</button>
+    <button class="btn btn-secondary" onclick="restartGame()" style="margin-top:12px;">Play Again</button>
   `;
+}
+
+function restartGame() {
+  gameState = { day: 1, budgetUsed: 0, budgetTotal: 30000, features: 0, eventIdx: 0, started: false, incidentMultiplier: 1.0, skippedPostmortems: 0 };
+  document.getElementById('gameResult').style.display = 'none';
+  document.getElementById('game-stage').style.display = 'none';
+  document.getElementById('game-intro').style.display = 'flex';
+  updateGameUI();
 }
 
 // ═══ Nav click handlers ═══
